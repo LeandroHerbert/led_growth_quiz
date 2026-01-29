@@ -39,10 +39,10 @@ const questions: Question[] = [
     id: 3,
     question: "Quanto tempo leva para alguém virar cliente?",
     answers: [
-      { text: "Meses (precisa de várias conversas)", model: "SLG" },
-      { text: "Dias ou semanas (sozinho no produto)", model: "PLG" },
-      { text: "Semanas (depois de ver conteúdo)", model: "MLG" },
-      { text: "Varia bastante, depende da minha disponibilidade", model: "FLG" },
+      { text: "Meses", model: "SLG" },
+      { text: "Dias ou semanas", model: "PLG" },
+      { text: "Semanas", model: "MLG" },
+      { text: "Varia bastante", model: "FLG" },
     ],
   },
   {
@@ -60,8 +60,8 @@ const questions: Question[] = [
     question: "O que faz um cliente permanecer com você?",
     answers: [
       { text: "Relacionamento com o vendedor", model: "SLG" },
-      { text: "O produto é fácil e útil", model: "PLG" },
-      { text: "Continua vendo conteúdo nosso", model: "MLG" },
+      { text: "A utilidade do produto na vida do cliente", model: "PLG" },
+      { text: "A qualidade do nosso conteúdo", model: "MLG" },
       { text: "Relacionamento comigo", model: "FLG" },
     ],
   },
@@ -140,25 +140,25 @@ const questions: Question[] = [
 const modelInfo = {
   SLG: {
     name: "Sales-Led Growth",
-    description: "Seu crescimento é impulsionado pela equipe de vendas. Você investe em vendedores, processos de vendas e relacionamentos B2B diretos.",
+    description: "Seu crescimento é impulsionado pela equipe de vendas.",
     color: "from-blue-500 to-blue-600",
     icon: "📞",
   },
   PLG: {
     name: "Product-Led Growth",
-    description: "O produto é seu vendedor. Você foca em experiência do usuário, onboarding e conversão self-service.",
+    description: "Seu crescimento é impulsionado pelo produto.",
     color: "from-purple-500 to-purple-600",
     icon: "🎯",
   },
   MLG: {
     name: "Marketing-Led Growth",
-    description: "Marketing gera demanda. Você investe em conteúdo, SEO, publicidade e inbound marketing.",
+    description: "Seu crescimento é impulsionado pelo marketing.",
     color: "from-green-500 to-green-600",
     icon: "📢",
   },
   FLG: {
     name: "Founder-Led Growth",
-    description: "Você é o vendedor. Sua marca pessoal e rede são o principal motor de crescimento.",
+    description: "Seu crescimento é impulsionado pelo fundador.",
     color: "from-red-500 to-red-600",
     icon: "⭐",
   },
@@ -225,10 +225,25 @@ export default function Home() {
                 <p className="text-lg opacity-90">{modelInfo[primaryModel as keyof typeof modelInfo].description}</p>
               </div>
 
+              {/* Pulse Animation */}
+              <style>{`
+                @keyframes pulse-shadow {
+                  0%, 100% {
+                    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+                  }
+                  50% {
+                    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+                  }
+                }
+                .pulse-button {
+                  animation: pulse-shadow 2s infinite;
+                }
+              `}</style>
+              
               {/* Action */}
               <Button
                 onClick={handleViewDetails}
-                className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg gap-2"
+                className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg gap-2 pulse-button shadow-lg"
               >
                 Ver Detalhes e Recomendações
                 <ArrowRight className="w-5 h-5" />
