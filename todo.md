@@ -18,3 +18,8 @@
 ## Correções
 - [x] Corrigir download do PDF de diagnóstico na página de resultado
 - [x] Testar download do PDF
+
+## Melhorias do Quiz
+- [x] Alterar título para "LED GROWTH MODELS"
+- [x] Alterar pergunta 6 para "Como você investe a maior parte do seu tempo"
+- [x] Remover pergunta 9 redundante (ciclo de vendas) - agora são 11 perguntas

@@ -70,7 +70,7 @@ const questions: Question[] = [
   },
   {
     id: 6,
-    question: "Como você gasta a maioria do seu tempo?",
+    question: "Como você investe a maior parte do seu tempo?",
     answers: [
       { text: "Vendendo e negociando com clientes", model: "SLG" },
       { text: "Melhorando o produto", model: "PLG" },
@@ -100,16 +100,6 @@ const questions: Question[] = [
   },
   {
     id: 9,
-    question: "Qual é o seu ciclo de vendas típico?",
-    answers: [
-      { text: "3+ meses", model: "SLG" },
-      { text: "Dias a 1 semana", model: "PLG" },
-      { text: "2-4 semanas", model: "MLG" },
-      { text: "Varia muito", model: "FLG" },
-    ],
-  },
-  {
-    id: 10,
     question: "Como você se diferencia da concorrência?",
     answers: [
       { text: "Relacionamento e atendimento pessoal", model: "SLG" },
@@ -119,7 +109,7 @@ const questions: Question[] = [
     ],
   },
   {
-    id: 11,
+    id: 10,
     question: "Qual é o seu ticket médio?",
     answers: [
       { text: "Alto (acima de R$10k)", model: "SLG" },
@@ -129,7 +119,7 @@ const questions: Question[] = [
     ],
   },
   {
-    id: 12,
+    id: 11,
     question: "Qual é sua prioridade para os próximos 6 meses?",
     answers: [
       { text: "Contratar e treinar mais vendedores", model: "SLG" },
@@ -343,7 +333,7 @@ export default function Home() {
         <div className="text-center mb-12">
           <img src="/images/un-logo.png" alt="UN Logo" className="h-16 mx-auto mb-6" />
           <h1 className="text-5xl font-bold text-white mb-4">
-            Qual é seu Modelo de <span className="text-blue-400">Led Growth?</span>
+            <span className="text-blue-400">LED GROWTH MODELS</span>
           </h1>
           <p className="text-xl text-gray-300">
             Descubra qual estratégia de crescimento é predominante no seu negócio
