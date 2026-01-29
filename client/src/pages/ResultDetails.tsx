@@ -13,75 +13,75 @@ const modelDetails = {
     overview: "No modelo Sales-Led Growth, a equipe de vendas é o motor principal de aquisição de clientes. Este modelo é particularmente eficaz para produtos B2B complexos, soluções enterprise e serviços que requerem customização. O foco está em construir relacionamentos diretos, entender necessidades específicas e negociar contratos de alto valor.",
     
     howItWorks: [
-      "Equipe de SDRs qualifica leads através de prospecção outbound",
-      "Account Executives conduzem demos e negociações",
-      "Ciclo de vendas longo (3-6+ meses) com múltiplos stakeholders",
+      "Equipe de vendedores faz contato direto com potenciais clientes",
+      "Realiza apresentações e demonstrações do produto",
+      "Negocia termos e preços customizados",
       "Relacionamento pessoal é crítico para fechar negócios",
-      "Foco em grandes contas e contratos de alto valor",
+      "Foco em contas maiores e contratos de alto valor",
     ],
 
     strengths: [
-      "Ideal para produtos complexos que precisam de explicação",
+      "Ideal para produtos que precisam de explicação",
       "Permite negociação de preços e termos customizados",
-      "Relacionamentos pessoais geram lealdade e retenção",
-      "Eficaz para penetração em mercados enterprise",
-      "Previsibilidade de receita através de pipeline estruturado",
+      "Relacionamentos geram lealdade e retenção",
+      "Eficaz para penetração em mercados grandes",
+      "Receita previsível através de pipeline estruturado",
     ],
 
     weaknesses: [
-      "Alto custo de aquisição (CAC) por cliente",
-      "Difícil de escalar sem aumentar equipe proporcionalmente",
+      "Custo alto para adquirir cada cliente",
+      "Difícil de crescer sem contratar mais vendedores",
       "Dependência de talentos em vendas",
-      "Ciclo de vendas longo reduz velocidade de crescimento",
-      "Menos eficaz para produtos self-service ou baixo preço",
+      "Processo de venda é longo",
+      "Menos eficaz para produtos baratos",
     ],
 
     applicationStrategies: [
       {
         title: "Estruturar Processo de Vendas",
-        description: "Defina um funil claro: prospecção → qualificação → demo → negociação → fechamento. Documente cada etapa e crie playbooks para cada fase.",
+        description: "Defina as etapas: quem você vai procurar → como vai fazer contato → o que vai falar → como vai fechar. Documente tudo para que outros vendedores possam replicar.",
       },
       {
-        title: "Recrutar Talento de Vendas",
-        description: "Contrate vendedores experientes com track record comprovado. Invista em treinamento contínuo e desenvolvimento de habilidades.",
+        title: "Recrutar Vendedores Bons",
+        description: "Contrate pessoas com experiência em vendas. Treine bem. Pague boas comissões para motivar. Um bom vendedor vale muito.",
       },
       {
-        title: "Usar CRM Eficientemente",
-        description: "Implemente um CRM robusto (Salesforce, HubSpot, Pipedrive) para rastrear pipeline, prever receita e identificar gargalos.",
+        title: "Usar Ferramentas de Vendas",
+        description: "Use CRM (como Pipedrive ou HubSpot) para rastrear cada cliente, saber em que etapa está, e prever quanto vai ganhar.",
       },
       {
-        title: "Desenvolver Argumentos de Venda",
-        description: "Crie materiais de vendas convincentes: case studies, ROI calculators, comparativas com concorrentes.",
+        title: "Criar Materiais de Venda",
+        description: "Prepare apresentações, cases de sucesso, comparações com concorrentes. Quanto melhor o material, mais fácil vender.",
       },
       {
-        title: "Otimizar Comissões e Incentivos",
-        description: "Estruture planos de comissão que motivem vendedores a fechar negócios maiores e manter clientes satisfeitos.",
+        title: "Encontrar os Clientes Certos",
+        description: "Defina exatamente quem é seu cliente ideal. Tamanho da empresa, setor, desafios. Isso ajuda vendedores a focar no que funciona.",
       },
     ],
 
     internalActions: [
-      "Criar job descriptions e começar recrutamento de SDRs e AEs",
-      "Implementar CRM e treinar equipe",
-      "Definir ICP (Ideal Customer Profile) e buyer personas",
-      "Criar sales playbook e scripts de vendas",
-      "Estabelecer métricas: CAC, LTV, sales cycle, win rate",
-      "Estruturar programa de onboarding para novos vendedores",
+      "Definir exatamente quem é seu cliente ideal",
+      "Criar um processo de vendas claro em etapas",
+      "Começar a recrutar primeiro vendedor",
+      "Implementar CRM para rastrear clientes",
+      "Criar apresentação e materiais de venda",
+      "Estruturar comissões e incentivos",
     ],
 
     externalActions: [
-      "Prospectar empresas que se encaixam no ICP",
+      "Fazer lista de empresas que encaixam no seu perfil",
+      "Fazer contato direto (email, LinkedIn, telefone)",
       "Participar de eventos e conferências do setor",
-      "Construir relacionamentos com decision makers",
-      "Criar conteúdo que educue sobre o problema (webinars, whitepapers)",
-      "Buscar referências de clientes satisfeitos",
-      "Considerar parcerias com consultores ou agências",
+      "Pedir referências de clientes satisfeitos",
+      "Fazer parcerias com consultores ou agências",
+      "Usar LinkedIn para encontrar decision makers",
     ],
 
     nextSteps: [
-      "Semana 1-2: Definir ICP e criar sales playbook",
-      "Semana 3-4: Começar recrutamento de primeiro SDR/AE",
-      "Mês 2: Implementar CRM e treinar equipe",
-      "Mês 3+: Escalar prospecção e otimizar funil",
+      "Semana 1-2: Definir quem é seu cliente ideal e criar lista",
+      "Semana 3-4: Começar contatos e primeiras apresentações",
+      "Mês 2: Implementar CRM e treinar primeiro vendedor",
+      "Mês 3+: Escalar prospecção e otimizar processo",
     ],
   },
 
@@ -91,28 +91,27 @@ const modelDetails = {
     color: "from-purple-500 to-purple-600",
     shortDescription: "O produto é seu vendedor",
 
-    overview: "No modelo Product-Led Growth, o próprio produto é o principal canal de aquisição. Usuários experimentam o produto (versão gratuita, free trial ou demo interativa) e fazem upgrade quando percebem valor. Este modelo é ideal para SaaS, ferramentas, apps e produtos com proposta de valor clara e rápido 'momento aha'.",
+    overview: "No modelo Product-Led Growth, o próprio produto é o principal canal de aquisição. Usuários experimentam o produto (versão gratuita, free trial ou demo) e fazem upgrade quando percebem valor. Este modelo é ideal para SaaS, ferramentas, apps e produtos com proposta de valor clara e rápido 'momento aha'.",
 
     howItWorks: [
-      "Usuários acessam versão gratuita ou trial sem barreiras",
-      "Onboarding intuitivo guia usuários ao 'momento aha'",
-      "Usuários fazem upgrade quando precisam de mais funcionalidades",
+      "Usuários acessam versão gratuita sem barreiras",
+      "Onboarding simples guia usuários ao 'momento aha'",
+      "Usuários fazem upgrade quando precisam de mais",
       "Ciclo de vendas muito curto (dias/semanas)",
       "Foco em experiência do usuário e retenção",
     ],
 
     strengths: [
-      "Custo de aquisição (CAC) muito baixo ou zero",
+      "Custo muito baixo para adquirir cliente",
       "Escalável sem aumentar equipe proporcionalmente",
       "Feedback direto de usuários sobre o produto",
       "Ciclo de vendas muito mais rápido",
       "Usuários já conhecem o produto antes de pagar",
-      "Ideal para produtos com proposta de valor clara",
     ],
 
     weaknesses: [
-      "Requer produto intuitivo e bem pensado",
-      "Difícil para produtos complexos ou B2B enterprise",
+      "Requer produto muito intuitivo",
+      "Difícil para produtos complexos",
       "Altas taxas de churn se onboarding for ruim",
       "Precisa de grande volume de usuários",
       "Menos eficaz para produtos de alto preço",
@@ -120,48 +119,49 @@ const modelDetails = {
 
     applicationStrategies: [
       {
-        title: "Otimizar Onboarding",
-        description: "Crie um onboarding que leve usuários ao 'momento aha' em minutos. Remova fricções e guie com tooltips e walkthroughs.",
+        title: "Simplificar o Onboarding",
+        description: "Quando alguém entra no seu produto, em 5 minutos precisa entender o valor. Use dicas na tela, tutoriais rápidos, exemplos. Remova tudo que não é essencial.",
       },
       {
-        title: "Implementar Freemium ou Free Trial",
-        description: "Oferça versão gratuita com limitações ou trial de 14-30 dias. Certifique-se que usuários vejam valor antes do trial expirar.",
+        title: "Oferecer Versão Gratuita ou Trial",
+        description: "Deixe as pessoas usarem gratuitamente ou por 14-30 dias. Coloque as funcionalidades mais importantes no plano pago, para que vejam valor antes de pagar.",
       },
       {
-        title: "Criar Loops de Engajamento",
-        description: "Mantenha usuários engajados com notificações, email, in-app messaging. Use dados para identificar quando usuários estão prestes a fazer churn.",
-      },
-      {
-        title: "Otimizar Pricing e Planos",
-        description: "Crie planos que façam sentido para diferentes segmentos. Coloque features críticas em planos pagos.",
+        title: "Manter Usuários Engajados",
+        description: "Envie emails, notificações, mensagens no app para manter usuários usando. Use dados para saber quando alguém está prestes a parar.",
       },
       {
         title: "Usar Dados para Melhorar",
-        description: "Rastreie comportamento de usuários: onde eles ficam presos, onde fazem churn, qual é o caminho para upgrade.",
+        description: "Rastreie: onde usuários ficam presos, onde desistem, qual é o caminho para upgrade. Use essas informações para melhorar o produto.",
+      },
+      {
+        title: "Criar Planos de Preço Inteligentes",
+        description: "Crie planos que façam sentido: básico (gratuito), intermediário, premium. Coloque features importantes em planos pagos.",
       },
     ],
 
     internalActions: [
-      "Mapear o 'momento aha' do seu produto",
-      "Redesenhar onboarding para ser mais intuitivo",
-      "Implementar analytics (Mixpanel, Amplitude, Segment)",
-      "Criar planos de preço e estrutura de freemium",
-      "Definir métricas: CAC, LTV, churn rate, upgrade rate",
-      "Estruturar equipe de product e design",
+      "Identificar o 'momento aha' do seu produto (quando usuário vê valor)",
+      "Redesenhar onboarding para ser mais simples",
+      "Implementar analytics para rastrear comportamento",
+      "Criar planos de preço e estrutura freemium",
+      "Definir métricas: quantos fazem upgrade, quantos desistem",
+      "Estruturar equipe de produto e design",
     ],
 
     externalActions: [
-      "Buscar feedback de usuários em redes sociais e comunidades",
+      "Pedir feedback de usuários em redes sociais",
       "Participar de comunidades onde seu público está",
-      "Criar conteúdo educativo sobre como usar o produto",
-      "Incentivar word-of-mouth através de programa de referência",
-      "Considerar parcerias com influenciadores ou reviewers",
+      "Criar conteúdo no YouTube mostrando como usar",
+      "Fazer posts no Instagram/TikTok com dicas de uso",
+      "Criar blog com tutoriais e guias",
+      "Incentivar usuários a indicar para amigos",
     ],
 
     nextSteps: [
-      "Semana 1-2: Mapear jornada do usuário e identificar fricções",
+      "Semana 1-2: Mapear jornada do usuário e identificar problemas",
       "Semana 3-4: Redesenhar onboarding",
-      "Mês 2: Implementar analytics e começar testes A/B",
+      "Mês 2: Implementar analytics e começar testes",
       "Mês 3+: Iterar baseado em dados de usuário",
     ],
   },
@@ -175,76 +175,75 @@ const modelDetails = {
     overview: "No modelo Marketing-Led Growth, marketing é o motor principal de geração de demanda. Através de conteúdo, SEO, publicidade paga, email e inbound marketing, você atrai leads qualificados que já estão interessados em sua solução. Este modelo é ideal para B2B SaaS, agências, consultoria e produtos com ciclo de vendas moderado.",
 
     howItWorks: [
-      "Criar conteúdo que atrai seu público-alvo (blog, vídeos, webinars)",
-      "Otimizar para SEO para aparecer em buscas relevantes",
-      "Usar publicidade paga (Google Ads, LinkedIn, Facebook) para escalar",
+      "Criar conteúdo que atrai seu público (blog, vídeos, Instagram)",
+      "Otimizar para aparecer em buscas (Google, YouTube)",
+      "Usar publicidade paga (Google Ads, Instagram, LinkedIn)",
       "Leads chegam já qualificados e interessados",
       "Equipe de vendas foca em fechar leads já quentes",
     ],
 
     strengths: [
-      "Leads chegam já qualificados e interessados",
+      "Leads chegam já qualificados",
       "Conteúdo continua gerando leads mesmo dormindo",
       "Escalável através de publicidade paga",
       "Custo por lead pode ser muito competitivo",
-      "Construi autoridade e credibilidade no mercado",
-      "Ideal para produtos com proposta de valor clara",
+      "Construi autoridade e credibilidade",
     ],
 
     weaknesses: [
       "Requer investimento consistente em conteúdo",
       "Resultados de SEO levam tempo (3-6+ meses)",
-      "Dependência de publicidade paga para escalar rápido",
-      "Requer expertise em marketing digital",
+      "Dependência de publicidade paga para escalar",
+      "Requer conhecimento em marketing digital",
       "Menos eficaz para produtos muito niche",
     ],
 
     applicationStrategies: [
       {
-        title: "Criar Estratégia de Conteúdo",
-        description: "Defina tópicos que seu público busca. Crie blog posts, vídeos, podcasts, webinars que educam e posicionam sua marca.",
+        title: "Criar Conteúdo que Atrai",
+        description: "Faça blog posts, vídeos no YouTube, reels no Instagram sobre os problemas que seus clientes têm. Quanto mais conteúdo útil, mais pessoas encontram você.",
       },
       {
-        title: "Otimizar para SEO",
-        description: "Pesquise keywords, otimize on-page SEO, construa backlinks. Foco em long-tail keywords com menos concorrência.",
+        title: "Aparecer no Google",
+        description: "Escreva sobre palavras que seu cliente busca. Otimize o blog, crie conteúdo de qualidade. Leva tempo, mas depois gera leads gratuitamente.",
       },
       {
-        title: "Escalar com Publicidade Paga",
-        description: "Use Google Ads, LinkedIn Ads, Facebook Ads para escalar. Teste diferentes mensagens e públicos.",
+        title: "Usar Publicidade Paga",
+        description: "Invista em Google Ads, Instagram Ads, LinkedIn Ads. Teste diferentes mensagens e públicos. Duplique o que funciona.",
       },
       {
-        title: "Implementar Email Marketing",
-        description: "Construa lista de emails. Use sequências automáticas para nutrir leads e convertê-los em clientes.",
+        title: "Email Marketing",
+        description: "Construa lista de emails. Envie conteúdo útil regularmente. Quando alguém está pronto para comprar, já conhece você.",
       },
       {
-        title: "Medir e Otimizar",
-        description: "Rastreie ROI de cada canal. Duplique o que funciona, pause o que não funciona.",
+        title: "Redes Sociais",
+        description: "Poste regularmente no Instagram, TikTok, LinkedIn. Compartilhe dicas, cases, histórias. Quanto mais engajado, mais pessoas conhecem.",
       },
     ],
 
     internalActions: [
-      "Definir buyer personas e customer journey",
-      "Criar calendário editorial de conteúdo",
-      "Implementar blog e otimizar para SEO",
-      "Configurar Google Analytics e rastreamento de conversão",
+      "Definir quem é seu cliente ideal e o que ele busca",
+      "Criar calendário de conteúdo (blog, vídeos, posts)",
+      "Começar blog e otimizar para Google",
+      "Configurar Google Analytics para rastrear resultados",
       "Criar templates de email e sequências",
-      "Definir métricas: CAC, LTV, conversion rate, ROI",
+      "Definir métricas: quanto custa cada lead, quantos viram clientes",
     ],
 
     externalActions: [
-      "Publicar conteúdo regularmente em blog e redes sociais",
-      "Participar de comunidades e fóruns relevantes",
-      "Guest posts em blogs de autoridade",
-      "Criar campanhas de publicidade paga",
+      "Publicar 2-3 posts de blog por semana",
+      "Fazer 1-2 vídeos por semana no YouTube",
+      "Postar diariamente no Instagram/TikTok",
+      "Começar campanhas de publicidade paga",
+      "Participar de comunidades e fóruns",
       "Fazer parcerias com outros criadores de conteúdo",
-      "Considerar influenciadores ou partnerships",
     ],
 
     nextSteps: [
-      "Semana 1-2: Pesquisar keywords e definir tópicos de conteúdo",
+      "Semana 1-2: Pesquisar o que seu cliente busca no Google",
       "Semana 3-4: Publicar 3-5 posts de blog otimizados",
-      "Mês 2: Implementar email marketing e começar campanhas pagas",
-      "Mês 3+: Analisar dados e otimizar canais com melhor ROI",
+      "Mês 2: Começar canal no YouTube e Instagram",
+      "Mês 3+: Começar publicidade paga e analisar resultados",
     ],
   },
 
@@ -257,75 +256,74 @@ const modelDetails = {
     overview: "No modelo Founder-Led Growth, o fundador é o principal motor de crescimento. Através da sua marca pessoal, rede de contatos, credibilidade e presença, você atrai clientes e constrói autoridade no mercado. Este modelo é comum em startups iniciais, consultoria, coaching e produtos onde a visão do fundador é diferencial.",
 
     howItWorks: [
-      "Fundador vende pessoalmente aos primeiros clientes",
-      "Constrói marca pessoal em redes sociais e comunidades",
-      "Participa de eventos, podcasts, conferências",
-      "Relacionamentos pessoais geram referências e word-of-mouth",
-      "Credibilidade do fundador atrai investidores e parceiros",
+      "Você vende pessoalmente aos primeiros clientes",
+      "Constrói marca pessoal em redes sociais",
+      "Participa de eventos e comunidades",
+      "Relacionamentos pessoais geram referências",
+      "Credibilidade atrai investidores e parceiros",
     ],
 
     strengths: [
-      "Custo de aquisição (CAC) muito baixo",
-      "Relacionamentos pessoais geram lealdade",
-      "Velocidade para validar produto-mercado",
+      "Custo muito baixo para adquirir cliente",
+      "Relacionamentos geram lealdade",
+      "Velocidade para validar produto",
       "Atrai investidores e parceiros",
       "Diferencial competitivo claro",
-      "Feedback direto de clientes",
     ],
 
     weaknesses: [
-      "Não é escalável a longo prazo (depende do fundador)",
-      "Risco de burnout do fundador",
+      "Não é escalável (depende de você)",
+      "Risco de cansaço e burnout",
       "Difícil de delegar quando cresce",
-      "Cultura pode ficar excessivamente dependente do fundador",
+      "Cultura pode ficar dependente de você",
       "Transição para modelo escalável é desafiadora",
     ],
 
     applicationStrategies: [
       {
-        title: "Construir Marca Pessoal",
-        description: "Comece a compartilhar sua expertise em LinkedIn, Twitter, blog. Seja autêntico e vulnerável. Construa audiência ao redor de sua visão.",
+        title: "Construir Presença no LinkedIn",
+        description: "Compartilhe sua jornada, aprendizados, dicas sobre seu setor. Seja autêntico. Construa seguidores ao redor de sua visão. Isso atrai clientes e parceiros.",
       },
       {
-        title: "Ativar Rede Pessoal",
-        description: "Mapeie sua rede. Comece conversas com pessoas que podem se beneficiar do seu produto. Peça referências.",
+        title: "Usar Instagram e TikTok",
+        description: "Faça vídeos curtos mostrando sua expertise, dia a dia, dicas rápidas. Pessoas se conectam com pessoas, não com empresas. Seja você mesmo.",
+      },
+      {
+        title: "Criar Blog e YouTube",
+        description: "Compartilhe conhecimento profundo em blog posts e vídeos. Isso posiciona você como especialista e atrai clientes que já confiam em você.",
+      },
+      {
+        title: "Ativar Sua Rede",
+        description: "Converse com pessoas que conhece. Pense em quem pode se beneficiar do seu produto. Peça indicações. Relacionamentos geram negócios.",
       },
       {
         title: "Participar de Comunidades",
-        description: "Encontre comunidades onde seu público está. Participe, ajude, construa relacionamentos. Não venda, agregue valor.",
-      },
-      {
-        title: "Criar Conteúdo Pessoal",
-        description: "Compartilhe sua jornada, aprendizados, fracassos. Crie posts, artigos, vídeos que mostrem sua expertise.",
-      },
-      {
-        title: "Planejar Transição",
-        description: "Desde o início, documente seu processo de vendas. Recrute um vendedor que possa replicar seu estilo.",
+        description: "Encontre grupos e comunidades onde seu público está. Participe, ajude, agregue valor. Não venda, apenas seja útil. Negócios virão naturalmente.",
       },
     ],
 
     internalActions: [
-      "Definir sua visão e diferencial único",
-      "Criar perfis em LinkedIn, Twitter, blog pessoal",
-      "Começar a produzir conteúdo regularmente",
-      "Mapear rede de contatos e identificar oportunidades",
-      "Documentar processo de vendas e argumentos",
-      "Estruturar equipe para começar a delegar",
+      "Definir sua visão e o que te diferencia",
+      "Criar perfil profissional no LinkedIn",
+      "Começar a postar regularmente",
+      "Mapear sua rede de contatos",
+      "Documentar como você vende",
+      "Começar a recrutar alguém para ajudar",
     ],
 
     externalActions: [
-      "Publicar conteúdo pessoal em redes sociais",
+      "Postar 2-3 vezes por semana no LinkedIn",
+      "Fazer reels no Instagram/TikTok semanalmente",
+      "Começar blog ou YouTube com conteúdo profundo",
       "Participar de eventos e conferências do setor",
       "Fazer podcasts e entrevistas",
-      "Construir relacionamentos com influenciadores e líderes",
-      "Participar de comunidades online",
-      "Fazer parcerias com outros fundadores",
+      "Construir relacionamentos com líderes do mercado",
     ],
 
     nextSteps: [
-      "Semana 1-2: Criar perfis pessoais e começar a compartilhar",
-      "Semana 3-4: Publicar 3-5 posts de conteúdo pessoal",
-      "Mês 2: Começar conversas com rede pessoal",
+      "Semana 1-2: Criar/atualizar perfil LinkedIn e começar a postar",
+      "Semana 3-4: Fazer 3-5 posts de conteúdo pessoal",
+      "Mês 2: Começar Instagram/TikTok ou YouTube",
       "Mês 3+: Participar de eventos e construir relacionamentos",
     ],
   },
@@ -378,7 +376,7 @@ export default function ResultDetails() {
 
         {/* Overview */}
         <Card className="bg-white mb-8 p-8">
-          <h2 className="text-2xl font-bold mb-4">Visão Geral</h2>
+          <h2 className="text-2xl font-bold mb-4">O que é?</h2>
           <p className="text-gray-700 leading-relaxed">{details.overview}</p>
         </Card>
 
@@ -435,7 +433,7 @@ export default function ResultDetails() {
         <Card className="bg-white mb-8 p-8">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <TrendingUp className="w-6 h-6 text-blue-600" />
-            Estratégias de Aplicação
+            O que Fazer Agora
           </h2>
           <div className="space-y-6">
             {details.applicationStrategies.map((strategy, idx) => (
@@ -451,7 +449,7 @@ export default function ResultDetails() {
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <Card className="bg-white p-8">
             <h2 className="text-xl font-bold mb-4">Ações Internas</h2>
-            <p className="text-sm text-gray-600 mb-4">O que você deve fazer dentro da empresa:</p>
+            <p className="text-sm text-gray-600 mb-4">O que fazer dentro da empresa:</p>
             <ul className="space-y-2">
               {details.internalActions.map((action, idx) => (
                 <li key={idx} className="flex gap-2 text-gray-700 text-sm">
@@ -464,7 +462,7 @@ export default function ResultDetails() {
 
           <Card className="bg-white p-8">
             <h2 className="text-xl font-bold mb-4">Ações Externas</h2>
-            <p className="text-sm text-gray-600 mb-4">O que você deve fazer no mercado:</p>
+            <p className="text-sm text-gray-600 mb-4">O que fazer no mercado:</p>
             <ul className="space-y-2">
               {details.externalActions.map((action, idx) => (
                 <li key={idx} className="flex gap-2 text-gray-700 text-sm">
@@ -478,7 +476,7 @@ export default function ResultDetails() {
 
         {/* Next Steps */}
         <Card className="bg-white p-8">
-          <h2 className="text-2xl font-bold mb-6">Próximos Passos (Roadmap)</h2>
+          <h2 className="text-2xl font-bold mb-6">Seu Plano de Ação</h2>
           <div className="space-y-4">
             {details.nextSteps.map((step, idx) => (
               <div key={idx} className="flex gap-4">

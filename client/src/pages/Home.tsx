@@ -5,11 +5,6 @@ import { Progress } from "@/components/ui/progress";
 import { ChevronRight, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
 
-interface Answer {
-  model: string;
-  points: number;
-}
-
 interface Question {
   id: number;
   question: string;
@@ -22,122 +17,122 @@ interface Question {
 const questions: Question[] = [
   {
     id: 1,
-    question: "Se você precisasse triplicar seu faturamento nos próximos 12 meses, qual seria seu primeiro movimento?",
+    question: "Como você conquistou seus primeiros clientes?",
     answers: [
-      { text: "Contratar mais vendedores", model: "SLG" },
-      { text: "Melhorar o onboarding e experiência do produto", model: "PLG" },
-      { text: "Aumentar investimento em marketing e conteúdo", model: "MLG" },
-      { text: "Eu mesmo venderia mais pessoalmente", model: "FLG" },
+      { text: "Vendedores fizeram contato direto e apresentação", model: "SLG" },
+      { text: "Eles experimentaram o produto sozinhos e compraram", model: "PLG" },
+      { text: "Encontraram você através de buscas ou conteúdo online", model: "MLG" },
+      { text: "Conhecidos meus indicaram para eles", model: "FLG" },
     ],
   },
   {
     id: 2,
-    question: "O que você considera o maior gargalo para crescer mais rápido?",
+    question: "Se você precisasse crescer 3x em 12 meses, o que faria primeiro?",
     answers: [
-      { text: "Falta de bons vendedores", model: "SLG" },
-      { text: "Experiência e complexidade do produto", model: "PLG" },
-      { text: "Orçamento e produção de conteúdo", model: "MLG" },
-      { text: "Meu tempo e presença pessoal", model: "FLG" },
+      { text: "Contratar mais vendedores", model: "SLG" },
+      { text: "Melhorar como o produto funciona", model: "PLG" },
+      { text: "Investir em publicidade e conteúdo", model: "MLG" },
+      { text: "Usar minha rede pessoal e credibilidade", model: "FLG" },
     ],
   },
   {
     id: 3,
-    question: "Como seus primeiros 10 clientes descobriram você?",
+    question: "Quanto tempo leva para alguém virar cliente?",
     answers: [
-      { text: "Vendedores fizeram prospecção direta", model: "SLG" },
-      { text: "Experimentaram o produto gratuitamente", model: "PLG" },
-      { text: "Encontraram através de Google ou conteúdo", model: "MLG" },
-      { text: "Rede pessoal do fundador", model: "FLG" },
+      { text: "Meses (precisa de várias conversas)", model: "SLG" },
+      { text: "Dias ou semanas (sozinho no produto)", model: "PLG" },
+      { text: "Semanas (depois de ver conteúdo)", model: "MLG" },
+      { text: "Varia bastante, depende da minha disponibilidade", model: "FLG" },
     ],
   },
   {
     id: 4,
-    question: "Se você tivesse que escolher: investir R$100k em um desses, qual escolheria?",
+    question: "Qual é seu maior desafio para crescer?",
     answers: [
-      { text: "Contratar 2 vendedores excelentes", model: "SLG" },
-      { text: "Melhorar a experiência do produto", model: "PLG" },
-      { text: "Criar conteúdo e campanhas de marketing", model: "MLG" },
-      { text: "Aumentar minha presença pessoal", model: "FLG" },
+      { text: "Encontrar e manter bons vendedores", model: "SLG" },
+      { text: "Melhorar a experiência do usuário", model: "PLG" },
+      { text: "Produzir conteúdo e publicidade", model: "MLG" },
+      { text: "Não consigo fazer tudo sozinho", model: "FLG" },
     ],
   },
   {
     id: 5,
-    question: "Qual é o melhor indicador de que um cliente vai permanecer com você?",
+    question: "O que faz um cliente permanecer com você?",
     answers: [
-      { text: "Relacionamento forte com o vendedor", model: "SLG" },
-      { text: "Usa frequentemente o produto", model: "PLG" },
-      { text: "Continua consumindo nosso conteúdo", model: "MLG" },
-      { text: "Relacionamento pessoal com o fundador", model: "FLG" },
+      { text: "Relacionamento com o vendedor", model: "SLG" },
+      { text: "O produto é fácil e útil", model: "PLG" },
+      { text: "Continua vendo conteúdo nosso", model: "MLG" },
+      { text: "Relacionamento comigo", model: "FLG" },
     ],
   },
   {
     id: 6,
-    question: "Qual é o seu ciclo de vendas típico?",
+    question: "Onde você investe mais dinheiro?",
     answers: [
-      { text: "3-6 meses ou mais (B2B enterprise)", model: "SLG" },
-      { text: "Dias ou semanas (self-service)", model: "PLG" },
-      { text: "Semanas (inbound leads)", model: "MLG" },
-      { text: "Variável, depende da minha disponibilidade", model: "FLG" },
+      { text: "Salários e comissões de vendedores", model: "SLG" },
+      { text: "Melhorias no produto", model: "PLG" },
+      { text: "Publicidade, Instagram, Google Ads", model: "MLG" },
+      { text: "Meu tempo e networking", model: "FLG" },
     ],
   },
   {
     id: 7,
-    question: "Qual é o seu maior investimento em aquisição de clientes?",
+    question: "Se parasse com vendas por um mês, o que acontecia?",
     answers: [
-      { text: "Salários e comissões de vendedores", model: "SLG" },
-      { text: "Melhorias no produto e UX", model: "PLG" },
-      { text: "Publicidade, conteúdo e ferramentas de marketing", model: "MLG" },
-      { text: "Meu próprio tempo e networking", model: "FLG" },
+      { text: "Praticamente pararia de ganhar clientes", model: "SLG" },
+      { text: "Diminuiria, mas o produto ainda venderia", model: "PLG" },
+      { text: "Diminuiria gradualmente", model: "MLG" },
+      { text: "Seria um desastre para mim", model: "FLG" },
     ],
   },
   {
     id: 8,
-    question: "Se removesse o elemento principal de sua estratégia por um mês, qual seria o impacto?",
+    question: "Como você valida se o produto resolve o problema?",
     answers: [
-      { text: "Praticamente pararia a aquisição de clientes", model: "SLG" },
-      { text: "Conversões cairiam drasticamente", model: "PLG" },
-      { text: "Leads inbound diminuiriam significativamente", model: "MLG" },
-      { text: "Seria devastador para o crescimento", model: "FLG" },
+      { text: "Conversas diretas com clientes", model: "SLG" },
+      { text: "Vendo como as pessoas usam", model: "PLG" },
+      { text: "Feedback nos comentários e redes", model: "MLG" },
+      { text: "Conversas pessoais que tenho", model: "FLG" },
     ],
   },
   {
     id: 9,
-    question: "Como você valida se seu produto/serviço resolve o problema do cliente?",
+    question: "Qual é sua vantagem competitiva?",
     answers: [
-      { text: "Através de conversas diretas com vendedores", model: "SLG" },
-      { text: "Observando o comportamento e uso do produto", model: "PLG" },
-      { text: "Através de feedback de conteúdo e comentários", model: "MLG" },
-      { text: "Conversas pessoais diretas com clientes", model: "FLG" },
+      { text: "Equipe de vendas experiente", model: "SLG" },
+      { text: "Produto fácil de usar", model: "PLG" },
+      { text: "Conteúdo e presença online", model: "MLG" },
+      { text: "Minha credibilidade e rede", model: "FLG" },
     ],
   },
   {
     id: 10,
-    question: "Qual é a sua vantagem competitiva mais forte?",
+    question: "Como você pretende escalar nos próximos 2 anos?",
     answers: [
-      { text: "Equipe de vendas experiente e bem treinada", model: "SLG" },
-      { text: "Produto intuitivo e fácil de usar", model: "PLG" },
-      { text: "Conteúdo de qualidade e presença online", model: "MLG" },
-      { text: "Credibilidade e rede pessoal do fundador", model: "FLG" },
+      { text: "Expandindo a equipe de vendas", model: "SLG" },
+      { text: "Melhorando o produto e adicionando funcionalidades", model: "PLG" },
+      { text: "Aumentando visibilidade online", model: "MLG" },
+      { text: "Construindo minha marca pessoal", model: "FLG" },
     ],
   },
   {
     id: 11,
-    question: "Qual é o seu maior desafio de escalabilidade?",
+    question: "Se tivesse R$100k para investir, escolheria:",
     answers: [
-      { text: "Encontrar e manter bons vendedores", model: "SLG" },
-      { text: "Manter qualidade enquanto cresce", model: "PLG" },
-      { text: "Produzir conteúdo em escala", model: "MLG" },
-      { text: "Não conseguir fazer tudo sozinho", model: "FLG" },
+      { text: "Contratar 2 vendedores bons", model: "SLG" },
+      { text: "Melhorar a experiência do produto", model: "PLG" },
+      { text: "Publicidade e produção de conteúdo", model: "MLG" },
+      { text: "Aumentar minha presença online", model: "FLG" },
     ],
   },
   {
     id: 12,
-    question: "Qual é o seu plano para os próximos 2 anos?",
+    question: "Qual é o seu maior gargalo agora?",
     answers: [
-      { text: "Expandir e profissionalizar a equipe de vendas", model: "SLG" },
-      { text: "Melhorar o produto e adicionar novas funcionalidades", model: "PLG" },
-      { text: "Aumentar visibilidade e autoridade no mercado", model: "MLG" },
-      { text: "Construir minha marca pessoal como líder", model: "FLG" },
+      { text: "Falta de bons vendedores", model: "SLG" },
+      { text: "Produto complexo demais", model: "PLG" },
+      { text: "Orçamento de marketing", model: "MLG" },
+      { text: "Meu tempo pessoal", model: "FLG" },
     ],
   },
 ];
@@ -228,32 +223,6 @@ export default function Home() {
                 <div className="text-5xl mb-4">{modelInfo[primaryModel as keyof typeof modelInfo].icon}</div>
                 <h2 className="text-3xl font-bold mb-3">{modelInfo[primaryModel as keyof typeof modelInfo].name}</h2>
                 <p className="text-lg opacity-90">{modelInfo[primaryModel as keyof typeof modelInfo].description}</p>
-              </div>
-
-              {/* Score Breakdown */}
-              <div className="bg-gray-50 rounded-lg p-6 mb-8">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Sua Pontuação</h3>
-                <div className="space-y-3">
-                  {Object.entries(scores)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([model, score]) => (
-                      <div key={model} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-2xl">{modelInfo[model as keyof typeof modelInfo].icon}</span>
-                          <span className="font-medium text-gray-700">{modelInfo[model as keyof typeof modelInfo].name}</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-blue-500 h-2 rounded-full transition-all"
-                              style={{ width: `${(score / questions.length) * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className="font-bold text-gray-800 w-8">{score}</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
               </div>
 
               {/* Action */}
