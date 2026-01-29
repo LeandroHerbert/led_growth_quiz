@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import ResultDetails from "./pages/ResultDetails";
 import Dashboard from "./pages/Dashboard";
+import QRCodePage from "./pages/QRCodePage";
 
 
 function Router() {
@@ -15,6 +16,7 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/resultado/:model"} component={ResultDetails} />
       <Route path={"/dashboard"} component={Dashboard} />
+      <Route path={"/qrcode"} component={QRCodePage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

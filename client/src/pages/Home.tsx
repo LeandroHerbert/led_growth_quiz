@@ -377,8 +377,15 @@ export default function Home() {
         </Card>
 
         {/* Footer */}
-        <div className="text-center text-gray-400 text-sm">
-          Responda todas as perguntas para obter seu diagnóstico personalizado
+        <div className="mt-12 flex flex-col items-center gap-4">
+          <p className="text-gray-400 text-sm">Responda todas as perguntas para obter seu diagnóstico personalizado</p>
+          <Button
+            onClick={() => setLocation("/qrcode")}
+            variant="outline"
+            className="gap-2"
+          >
+            📱 Ver QR Code
+          </Button>
         </div>
       </div>
 
