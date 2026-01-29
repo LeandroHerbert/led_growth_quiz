@@ -1,9 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ChevronRight, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { nanoid } from "nanoid";
 
 interface Question {
   id: number;
@@ -172,33 +175,15 @@ export default function Home() {
   const [showResult, setShowResult] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Generate session ID once per quiz session
+  const sessionId = useMemo(() => nanoid(), []);
+
+  const saveResponseMutation = trpc.quiz.saveResponse.useMutation();
+  const saveCompletionMutation = trpc.quiz.saveCompletion.useMutation();
+
   const trackAnalytics = useCallback((eventName: string, data: any) => {
     if (typeof window !== "undefined" && (window as any).umami) {
       (window as any).umami.track(eventName, data);
-    }
-    
-    if (eventName === "quiz_answer_selected") {
-      const defaultAnalytics = { modelDistribution: { SLG: 0, PLG: 0, MLG: 0, FLG: 0 }, totalQuizzes: 0, completionRate: 0 };
-      const stored = localStorage.getItem("quiz_analytics");
-      const analytics = stored ? JSON.parse(stored) : defaultAnalytics;
-      
-      if (!analytics.modelDistribution) {
-        analytics.modelDistribution = { SLG: 0, PLG: 0, MLG: 0, FLG: 0 };
-      }
-      
-      const model = data.selected_model;
-      analytics.modelDistribution[model] = (analytics.modelDistribution[model] || 0) + 1;
-      localStorage.setItem("quiz_analytics", JSON.stringify(analytics));
-      console.log("Analytics updated:", analytics);
-    } else if (eventName === "quiz_completed") {
-      const defaultAnalytics = { modelDistribution: { SLG: 0, PLG: 0, MLG: 0, FLG: 0 }, totalQuizzes: 0, completionRate: 0 };
-      const stored = localStorage.getItem("quiz_analytics");
-      const analytics = stored ? JSON.parse(stored) : defaultAnalytics;
-      
-      analytics.totalQuizzes = (analytics.totalQuizzes || 0) + 1;
-      analytics.completionRate = 100;
-      localStorage.setItem("quiz_analytics", JSON.stringify(analytics));
-      console.log("Quiz completed, analytics:", analytics);
     }
   }, []);
 
@@ -208,6 +193,13 @@ export default function Home() {
 
       setIsProcessing(true);
       setSelectedAnswer(model);
+
+      // Save response to backend
+      saveResponseMutation.mutate({
+        sessionId,
+        questionId: currentQuestion + 1,
+        selectedModel: model,
+      });
 
       trackAnalytics("quiz_answer_selected", {
         question_id: currentQuestion + 1,
@@ -226,6 +218,28 @@ export default function Home() {
           setSelectedAnswer(null);
           setIsProcessing(false);
         } else {
+          const newScores = {
+            ...scores,
+            [model]: (scores[model as keyof typeof scores] || 0) + 1,
+          };
+          
+          // Get primary model
+          let maxScore = 0;
+          let primaryModel = "";
+          for (const [m, score] of Object.entries(newScores)) {
+            if (score > maxScore) {
+              maxScore = score;
+              primaryModel = m;
+            }
+          }
+
+          // Save completion to backend
+          saveCompletionMutation.mutate({
+            sessionId,
+            primaryModel,
+            scores: newScores,
+          });
+
           setShowResult(true);
           trackAnalytics("quiz_completed", {
             total_questions: questions.length,
@@ -234,7 +248,7 @@ export default function Home() {
         }
       }, 300);
     },
-    [currentQuestion, isProcessing, selectedAnswer, trackAnalytics]
+    [currentQuestion, isProcessing, selectedAnswer, trackAnalytics, sessionId, scores, saveResponseMutation, saveCompletionMutation]
   );
 
   const getPrimaryModel = (): string => {

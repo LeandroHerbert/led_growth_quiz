@@ -1,21 +1,15 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, BarChart3, TrendingUp } from "lucide-react";
+import { ArrowLeft, BarChart3, TrendingUp, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { trpc } from "@/lib/trpc";
 
 interface AnalyticsData {
   totalQuizzes: number;
   completionRate: number;
   modelDistribution: Record<string, number>;
-  questionsData: Array<{
-    question: number;
-    SLG: number;
-    PLG: number;
-    MLG: number;
-    FLG: number;
-  }>;
 }
 
 const COLORS = {
@@ -34,34 +28,13 @@ const modelNames = {
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const [analytics, setAnalytics] = useState<AnalyticsData>({
-    totalQuizzes: 0,
-    completionRate: 0,
-    modelDistribution: {
-      SLG: 0,
-      PLG: 0,
-      MLG: 0,
-      FLG: 0,
-    },
-    questionsData: [],
-  });
-
-  useEffect(() => {
-    // Load analytics from localStorage
-    const storedAnalytics = localStorage.getItem("quiz_analytics");
-    if (storedAnalytics) {
-      try {
-        setAnalytics(JSON.parse(storedAnalytics));
-      } catch (error) {
-        console.error("Error loading analytics:", error);
-      }
-    }
-
-    // Also try to get from console logs or other sources
-    console.log("Analytics Dashboard Loaded");
-  }, []);
+  
+  // Fetch analytics from backend
+  const { data: analytics, isLoading, error } = trpc.quiz.getAnalytics.useQuery();
 
   const getMostPredominantModel = () => {
+    if (!analytics) return { model: "SLG", count: 0 };
+    
     let maxCount = 0;
     let model = "SLG";
     for (const [key, value] of Object.entries(analytics.modelDistribution)) {
@@ -73,175 +46,182 @@ export default function Dashboard() {
     return { model, count: maxCount };
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
+        <Card className="bg-white p-8">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+            <p className="text-lg">Carregando analytics...</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
+        <Card className="bg-white p-8">
+          <p className="text-lg text-red-600">Erro ao carregar analytics: {error.message}</p>
+          <Button onClick={() => setLocation("/")} className="mt-4">
+            Voltar ao Quiz
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return null;
+  }
+
   const predominant = getMostPredominantModel();
   const totalResponses = Object.values(analytics.modelDistribution).reduce((a, b) => a + b, 0);
 
   const pieData = Object.entries(analytics.modelDistribution).map(([key, value]) => ({
     name: modelNames[key as keyof typeof modelNames],
-    value: value,
+    value,
     color: COLORS[key as keyof typeof COLORS],
+  }));
+
+  const barData = Object.entries(analytics.modelDistribution).map(([key, value]) => ({
+    model: modelNames[key as keyof typeof modelNames],
+    respostas: value,
   }));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Header with Logo */}
-        <div className="mb-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <img src="/images/un-logo.png" alt="UN Logo" className="h-12" />
+            <div>
+              <h1 className="text-4xl font-bold text-white">Dashboard de Analytics</h1>
+              <p className="text-gray-300 mt-1">Visualize os resultados do quiz em tempo real</p>
+            </div>
+          </div>
           <Button
-            variant="outline"
             onClick={() => setLocation("/")}
-            className="gap-2 mb-4"
+            variant="outline"
+            className="gap-2 bg-white"
           >
             <ArrowLeft className="w-4 h-4" />
             Voltar ao Quiz
           </Button>
-          <img src="/images/un-logo.png" alt="UN Logo" className="h-12" />
         </div>
 
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-white mb-2">Dashboard de Analytics</h1>
-          <p className="text-gray-300">Análise dos resultados do quiz de Led Growth</p>
-        </div>
-
-        {/* Key Metrics */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="bg-white p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Total de Quizzes</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{totalResponses}</p>
-              </div>
-              <div className="text-3xl">📊</div>
+            <div className="flex items-center gap-3 mb-2">
+              <BarChart3 className="w-6 h-6 text-blue-600" />
+              <h3 className="text-lg font-semibold">Total de Quizzes</h3>
             </div>
+            <p className="text-4xl font-bold text-blue-600">{analytics.totalQuizzes}</p>
+            <p className="text-sm text-gray-500 mt-1">Completados</p>
           </Card>
 
           <Card className="bg-white p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Taxa de Conclusão</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{analytics.completionRate}%</p>
-              </div>
-              <div className="text-3xl">✅</div>
+            <div className="flex items-center gap-3 mb-2">
+              <TrendingUp className="w-6 h-6 text-green-600" />
+              <h3 className="text-lg font-semibold">Taxa de Conclusão</h3>
             </div>
+            <p className="text-4xl font-bold text-green-600">{analytics.completionRate}%</p>
+            <p className="text-sm text-gray-500 mt-1">Dos iniciados</p>
           </Card>
 
           <Card className="bg-white p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Modelo Predominante</p>
-                <p className="text-2xl font-bold text-blue-600 mt-2">{predominant.model}</p>
-                <p className="text-sm text-gray-600 mt-1">{predominant.count} respostas</p>
-              </div>
-              <div className="text-3xl">🏆</div>
+            <div className="flex items-center gap-3 mb-2">
+              <div
+                className="w-6 h-6 rounded"
+                style={{ backgroundColor: COLORS[predominant.model as keyof typeof COLORS] }}
+              />
+              <h3 className="text-lg font-semibold">Modelo Predominante</h3>
             </div>
-          </Card>
-
-          <Card className="bg-white p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Modelos Únicos</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2">4</p>
-              </div>
-              <div className="text-3xl">🎯</div>
-            </div>
+            <p className="text-2xl font-bold" style={{ color: COLORS[predominant.model as keyof typeof COLORS] }}>
+              {modelNames[predominant.model as keyof typeof modelNames]}
+            </p>
+            <p className="text-sm text-gray-500 mt-1">{predominant.count} respostas</p>
           </Card>
         </div>
 
         {/* Charts */}
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Pie Chart */}
-          <Card className="bg-white p-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <BarChart3 className="w-6 h-6 text-blue-600" />
-              Distribuição de Modelos
-            </h2>
-            {totalResponses > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, value, percent }) =>
-                      `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
-                    }
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                Nenhum dado disponível ainda
-              </div>
-            )}
+          <Card className="bg-white p-6">
+            <h3 className="text-xl font-bold mb-4">Distribuição de Modelos</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </Card>
 
           {/* Bar Chart */}
-          <Card className="bg-white p-8">
-            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-green-600" />
-              Contagem por Modelo
-            </h2>
-            {totalResponses > 0 ? (
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  data={Object.entries(analytics.modelDistribution).map(([key, value]) => ({
-                    name: key,
-                    count: value,
-                  }))}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#3b82f6" />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-64 flex items-center justify-center text-gray-500">
-                Nenhum dado disponível ainda
-              </div>
-            )}
+          <Card className="bg-white p-6">
+            <h3 className="text-xl font-bold mb-4">Respostas por Modelo</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={barData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="model" angle={-45} textAnchor="end" height={100} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="respostas" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
           </Card>
         </div>
 
-        {/* Model Details */}
-        <Card className="bg-white p-8">
-          <h2 className="text-2xl font-bold mb-6">Detalhes por Modelo</h2>
-          <div className="grid md:grid-cols-4 gap-4">
-            {Object.entries(analytics.modelDistribution).map(([key, value]) => (
-              <div
-                key={key}
-                className="p-4 rounded-lg border-2"
-                style={{ borderColor: COLORS[key as keyof typeof COLORS] }}
-              >
-                <p className="font-bold text-gray-900 mb-2">
-                  {modelNames[key as keyof typeof modelNames]}
-                </p>
-                <p className="text-3xl font-bold" style={{ color: COLORS[key as keyof typeof COLORS] }}>
-                  {value}
-                </p>
-                <p className="text-sm text-gray-600 mt-2">
-                  {totalResponses > 0 ? ((value / totalResponses) * 100).toFixed(1) : 0}%
-                </p>
-              </div>
-            ))}
+        {/* Detailed Breakdown */}
+        <Card className="bg-white p-6">
+          <h3 className="text-xl font-bold mb-4">Detalhamento por Modelo</h3>
+          <div className="space-y-4">
+            {Object.entries(analytics.modelDistribution).map(([key, value]) => {
+              const percentage = totalResponses > 0 ? ((value / totalResponses) * 100).toFixed(1) : 0;
+              return (
+                <div key={key} className="flex items-center gap-4">
+                  <div
+                    className="w-4 h-4 rounded"
+                    style={{ backgroundColor: COLORS[key as keyof typeof COLORS] }}
+                  />
+                  <div className="flex-1">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-medium">{modelNames[key as keyof typeof modelNames]}</span>
+                      <span className="text-gray-600">
+                        {value} respostas ({percentage}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full"
+                        style={{
+                          width: `${percentage}%`,
+                          backgroundColor: COLORS[key as keyof typeof COLORS],
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </Card>
-
-        {/* Info Box */}
-        <Card className="bg-blue-50 border-2 border-blue-200 p-6 mt-8">
-          <p className="text-blue-900">
-            <strong>💡 Nota:</strong> Este dashboard mostra dados agregados de todas as sessões. Os dados são armazenados localmente no navegador e sincronizados com o Umami Analytics.
-          </p>
         </Card>
       </div>
     </div>
