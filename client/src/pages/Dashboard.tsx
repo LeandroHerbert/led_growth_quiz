@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, BarChart3, TrendingUp, Loader2 } from "lucide-react";
+import { ArrowLeft, BarChart3, TrendingUp, Loader2, Download } from "lucide-react";
 import { useLocation } from "wouter";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { trpc } from "@/lib/trpc";
@@ -31,6 +31,45 @@ export default function Dashboard() {
   
   // Fetch analytics from backend
   const { data: analytics, isLoading, error } = trpc.quiz.getAnalytics.useQuery();
+  const { data: detailedData } = trpc.quiz.getDetailedData.useQuery();
+
+  const exportToCSV = () => {
+    if (!detailedData || detailedData.length === 0) {
+      alert("Nenhum dado disponível para exportar");
+      return;
+    }
+
+    // Create CSV header
+    const headers = ["Session ID", "Modelo Predominante", "SLG", "PLG", "MLG", "FLG", "Data/Hora"];
+    
+    // Create CSV rows
+    const rows = detailedData.map((item: any) => [
+      item.sessionId,
+      item.primaryModel,
+      item.scores.SLG || 0,
+      item.scores.PLG || 0,
+      item.scores.MLG || 0,
+      item.scores.FLG || 0,
+      new Date(item.completedAt).toLocaleString('pt-BR'),
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(",")),
+    ].join("\n");
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `quiz_results_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const getMostPredominantModel = () => {
     if (!analytics) return { model: "SLG", count: 0 };
@@ -102,14 +141,24 @@ export default function Dashboard() {
               <p className="text-gray-300 mt-1">Visualize os resultados do quiz em tempo real</p>
             </div>
           </div>
-          <Button
-            onClick={() => setLocation("/")}
-            variant="outline"
-            className="gap-2 bg-white"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Voltar ao Quiz
-          </Button>
+          <div className="flex gap-3">
+            <Button
+              onClick={exportToCSV}
+              variant="outline"
+              className="gap-2 bg-green-600 text-white hover:bg-green-700 border-green-600"
+            >
+              <Download className="w-4 h-4" />
+              Exportar CSV
+            </Button>
+            <Button
+              onClick={() => setLocation("/")}
+              variant="outline"
+              className="gap-2 bg-white"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Voltar ao Quiz
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}

@@ -33,8 +33,11 @@ describe("quiz endpoints", () => {
     const ctx = createTestContext();
     const caller = appRouter.createCaller(ctx);
 
+    // Use unique sessionId to avoid duplicate key error
+    const uniqueSessionId = `test-session-${Date.now()}-${Math.random()}`;
+
     const result = await caller.quiz.saveCompletion({
-      sessionId: "test-session-456",
+      sessionId: uniqueSessionId,
       primaryModel: "PLG",
       scores: {
         SLG: 2,
@@ -62,5 +65,21 @@ describe("quiz endpoints", () => {
     expect(analytics.modelDistribution).toHaveProperty("FLG");
     expect(typeof analytics.totalQuizzes).toBe("number");
     expect(typeof analytics.completionRate).toBe("number");
+  });
+
+  it("retrieves detailed quiz data successfully", async () => {
+    const ctx = createTestContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const detailedData = await caller.quiz.getDetailedData();
+
+    expect(Array.isArray(detailedData)).toBe(true);
+    // If there's data, verify structure
+    if (detailedData.length > 0) {
+      expect(detailedData[0]).toHaveProperty("sessionId");
+      expect(detailedData[0]).toHaveProperty("primaryModel");
+      expect(detailedData[0]).toHaveProperty("scores");
+      expect(detailedData[0]).toHaveProperty("completedAt");
+    }
   });
 });

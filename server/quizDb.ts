@@ -87,3 +87,29 @@ export async function getQuizAnalytics() {
     };
   }
 }
+
+export async function getDetailedQuizData() {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get detailed quiz data: database not available");
+    return [];
+  }
+
+  try {
+    // Get all completions with their responses
+    const completions = await db
+      .select()
+      .from(quizCompletions)
+      .orderBy(quizCompletions.completedAt);
+
+    return completions.map((completion) => ({
+      sessionId: completion.sessionId,
+      primaryModel: completion.primaryModel,
+      scores: JSON.parse(completion.scores),
+      completedAt: completion.completedAt,
+    }));
+  } catch (error) {
+    console.error("[Database] Failed to get detailed quiz data:", error);
+    return [];
+  }
+}
