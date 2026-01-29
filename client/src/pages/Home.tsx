@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -164,6 +164,20 @@ const modelInfo = {
   },
 };
 
+// Track analytics
+const trackAnalytics = (event: string, data: any) => {
+  try {
+    // Send to analytics endpoint if available
+    if (typeof window !== "undefined" && (window as any).umami) {
+      (window as any).umami.track(event, data);
+    }
+    // Also log to console for debugging
+    console.log(`[Analytics] ${event}:`, data);
+  } catch (error) {
+    console.error("Analytics error:", error);
+  }
+};
+
 export default function Home() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [scores, setScores] = useState<Record<string, number>>({
@@ -173,19 +187,43 @@ export default function Home() {
     FLG: 0,
   });
   const [showResult, setShowResult] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [, setLocation] = useLocation();
 
-  const handleAnswer = (model: string) => {
-    setScores((prev) => ({
-      ...prev,
-      [model]: prev[model] + 1,
-    }));
+  // Scroll to top when question changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentQuestion, showResult]);
 
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-    } else {
-      setShowResult(true);
-    }
+  const handleAnswer = (model: string) => {
+    setSelectedAnswer(model);
+    
+    // Track answer selection
+    trackAnalytics("quiz_answer_selected", {
+      question_id: currentQuestion + 1,
+      question: questions[currentQuestion].question,
+      selected_model: model,
+    });
+
+    // Delay to show selection feedback
+    setTimeout(() => {
+      setScores((prev) => ({
+        ...prev,
+        [model]: prev[model] + 1,
+      }));
+
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedAnswer(null);
+      } else {
+        setShowResult(true);
+        // Track quiz completion
+        trackAnalytics("quiz_completed", {
+          total_questions: questions.length,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }, 300);
   };
 
   const getPrimaryModel = () => {
@@ -205,6 +243,11 @@ export default function Home() {
   if (showResult) {
     const primaryModel = getPrimaryModel();
     const handleViewDetails = () => {
+      // Track result view
+      trackAnalytics("quiz_result_viewed", {
+        primary_model: primaryModel,
+        scores: scores,
+      });
       setLocation(`/resultado/${primaryModel}`);
     };
 
@@ -213,13 +256,13 @@ export default function Home() {
         <div className="w-full max-w-2xl">
           <Card className="bg-white shadow-2xl">
             <div className="p-8 md:p-12">
-              <div className="text-center mb-8">
+              <div className="text-center mb-8 animate-fade-in">
                 <h1 className="text-4xl font-bold mb-2">Seu Diagnóstico</h1>
                 <p className="text-gray-600">Modelo de Led Growth Predominante</p>
               </div>
 
               {/* Primary Model */}
-              <div className={`bg-gradient-to-r ${modelInfo[primaryModel as keyof typeof modelInfo].color} rounded-lg p-8 text-white mb-8`}>
+              <div className={`bg-gradient-to-r ${modelInfo[primaryModel as keyof typeof modelInfo].color} rounded-lg p-8 text-white mb-8 animate-fade-in`}>
                 <div className="text-5xl mb-4">{modelInfo[primaryModel as keyof typeof modelInfo].icon}</div>
                 <h2 className="text-3xl font-bold mb-3">{modelInfo[primaryModel as keyof typeof modelInfo].name}</h2>
                 <p className="text-lg opacity-90">{modelInfo[primaryModel as keyof typeof modelInfo].description}</p>
@@ -235,8 +278,21 @@ export default function Home() {
                     box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
                   }
                 }
+                @keyframes fade-in {
+                  from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                  }
+                  to {
+                    opacity: 1;
+                    transform: translateY(0);
+                  }
+                }
                 .pulse-button {
                   animation: pulse-shadow 2s infinite;
+                }
+                .animate-fade-in {
+                  animation: fade-in 0.5s ease-out;
                 }
               `}</style>
               
@@ -268,17 +324,20 @@ export default function Home() {
 
         {/* Progress */}
         <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-3">
             <span className="text-sm font-medium text-gray-300">
               Pergunta {currentQuestion + 1} de {questions.length}
             </span>
             <span className="text-sm font-medium text-gray-300">{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
+          <div className="text-xs text-gray-400 mt-2 text-center">
+            {questions.length - currentQuestion - 1} pergunta{questions.length - currentQuestion - 1 !== 1 ? 's' : ''} restante{questions.length - currentQuestion - 1 !== 1 ? 's' : ''}
+          </div>
         </div>
 
         {/* Question Card */}
-        <Card className="bg-white shadow-2xl mb-8">
+        <Card className="bg-white shadow-2xl mb-8 animate-fade-in">
           <div className="p-8 md:p-10">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
               {questions[currentQuestion].question}
@@ -290,13 +349,26 @@ export default function Home() {
                 <button
                   key={index}
                   onClick={() => handleAnswer(answer.model)}
-                  className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                  className={`w-full p-4 text-left border-2 rounded-lg transition-all group ${
+                    selectedAnswer === answer.model
+                      ? "border-blue-500 bg-blue-50 scale-95"
+                      : "border-gray-200 hover:border-blue-500 hover:bg-blue-50"
+                  }`}
+                  disabled={selectedAnswer !== null}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-gray-800 group-hover:text-blue-600">
+                    <span className={`font-medium ${
+                      selectedAnswer === answer.model
+                        ? "text-blue-600"
+                        : "text-gray-800 group-hover:text-blue-600"
+                    }`}>
                       {answer.text}
                     </span>
-                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                    <ChevronRight className={`w-5 h-5 transition-colors ${
+                      selectedAnswer === answer.model
+                        ? "text-blue-500"
+                        : "text-gray-400 group-hover:text-blue-500"
+                    }`} />
                   </div>
                 </button>
               ))}
@@ -309,6 +381,22 @@ export default function Home() {
           Responda todas as perguntas para obter seu diagnóstico personalizado
         </div>
       </div>
+
+      <style>{`
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+      `}</style>
     </div>
   );
 }
