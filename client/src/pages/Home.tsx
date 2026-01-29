@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronRight, ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface Answer {
   model: string;
@@ -26,8 +27,6 @@ const questions: Question[] = [
       { text: "Contratar mais vendedores", model: "SLG" },
       { text: "Melhorar o onboarding e experiência do produto", model: "PLG" },
       { text: "Aumentar investimento em marketing e conteúdo", model: "MLG" },
-      { text: "Fortalecer a comunidade de usuários", model: "CLG" },
-      { text: "Recrutar e habilitar mais parceiros", model: "PLG" },
       { text: "Eu mesmo venderia mais pessoalmente", model: "FLG" },
     ],
   },
@@ -38,8 +37,6 @@ const questions: Question[] = [
       { text: "Falta de bons vendedores", model: "SLG" },
       { text: "Experiência e complexidade do produto", model: "PLG" },
       { text: "Orçamento e produção de conteúdo", model: "MLG" },
-      { text: "Engajamento e tamanho da comunidade", model: "CLG" },
-      { text: "Encontrar e habilitar parceiros qualificados", model: "PLG" },
       { text: "Meu tempo e presença pessoal", model: "FLG" },
     ],
   },
@@ -50,8 +47,6 @@ const questions: Question[] = [
       { text: "Vendedores fizeram prospecção direta", model: "SLG" },
       { text: "Experimentaram o produto gratuitamente", model: "PLG" },
       { text: "Encontraram através de Google ou conteúdo", model: "MLG" },
-      { text: "Membros da comunidade indicaram", model: "CLG" },
-      { text: "Parceiros trouxeram", model: "PLG" },
       { text: "Rede pessoal do fundador", model: "FLG" },
     ],
   },
@@ -62,8 +57,6 @@ const questions: Question[] = [
       { text: "Contratar 2 vendedores excelentes", model: "SLG" },
       { text: "Melhorar a experiência do produto", model: "PLG" },
       { text: "Criar conteúdo e campanhas de marketing", model: "MLG" },
-      { text: "Fortalecer a comunidade de usuários", model: "CLG" },
-      { text: "Recrutar e habilitar parceiros", model: "PLG" },
       { text: "Aumentar minha presença pessoal", model: "FLG" },
     ],
   },
@@ -74,9 +67,77 @@ const questions: Question[] = [
       { text: "Relacionamento forte com o vendedor", model: "SLG" },
       { text: "Usa frequentemente o produto", model: "PLG" },
       { text: "Continua consumindo nosso conteúdo", model: "MLG" },
-      { text: "Participa ativamente da comunidade", model: "CLG" },
-      { text: "Parceiro continua recomendando", model: "PLG" },
       { text: "Relacionamento pessoal com o fundador", model: "FLG" },
+    ],
+  },
+  {
+    id: 6,
+    question: "Qual é o seu ciclo de vendas típico?",
+    answers: [
+      { text: "3-6 meses ou mais (B2B enterprise)", model: "SLG" },
+      { text: "Dias ou semanas (self-service)", model: "PLG" },
+      { text: "Semanas (inbound leads)", model: "MLG" },
+      { text: "Variável, depende da minha disponibilidade", model: "FLG" },
+    ],
+  },
+  {
+    id: 7,
+    question: "Qual é o seu maior investimento em aquisição de clientes?",
+    answers: [
+      { text: "Salários e comissões de vendedores", model: "SLG" },
+      { text: "Melhorias no produto e UX", model: "PLG" },
+      { text: "Publicidade, conteúdo e ferramentas de marketing", model: "MLG" },
+      { text: "Meu próprio tempo e networking", model: "FLG" },
+    ],
+  },
+  {
+    id: 8,
+    question: "Se removesse o elemento principal de sua estratégia por um mês, qual seria o impacto?",
+    answers: [
+      { text: "Praticamente pararia a aquisição de clientes", model: "SLG" },
+      { text: "Conversões cairiam drasticamente", model: "PLG" },
+      { text: "Leads inbound diminuiriam significativamente", model: "MLG" },
+      { text: "Seria devastador para o crescimento", model: "FLG" },
+    ],
+  },
+  {
+    id: 9,
+    question: "Como você valida se seu produto/serviço resolve o problema do cliente?",
+    answers: [
+      { text: "Através de conversas diretas com vendedores", model: "SLG" },
+      { text: "Observando o comportamento e uso do produto", model: "PLG" },
+      { text: "Através de feedback de conteúdo e comentários", model: "MLG" },
+      { text: "Conversas pessoais diretas com clientes", model: "FLG" },
+    ],
+  },
+  {
+    id: 10,
+    question: "Qual é a sua vantagem competitiva mais forte?",
+    answers: [
+      { text: "Equipe de vendas experiente e bem treinada", model: "SLG" },
+      { text: "Produto intuitivo e fácil de usar", model: "PLG" },
+      { text: "Conteúdo de qualidade e presença online", model: "MLG" },
+      { text: "Credibilidade e rede pessoal do fundador", model: "FLG" },
+    ],
+  },
+  {
+    id: 11,
+    question: "Qual é o seu maior desafio de escalabilidade?",
+    answers: [
+      { text: "Encontrar e manter bons vendedores", model: "SLG" },
+      { text: "Manter qualidade enquanto cresce", model: "PLG" },
+      { text: "Produzir conteúdo em escala", model: "MLG" },
+      { text: "Não conseguir fazer tudo sozinho", model: "FLG" },
+    ],
+  },
+  {
+    id: 12,
+    question: "Qual é o seu plano para os próximos 2 anos?",
+    answers: [
+      { text: "Expandir e profissionalizar a equipe de vendas", model: "SLG" },
+      { text: "Melhorar o produto e adicionar novas funcionalidades", model: "PLG" },
+      { text: "Aumentar visibilidade e autoridade no mercado", model: "MLG" },
+      { text: "Construir minha marca pessoal como líder", model: "FLG" },
     ],
   },
 ];
@@ -100,18 +161,6 @@ const modelInfo = {
     color: "from-green-500 to-green-600",
     icon: "📢",
   },
-  CLG: {
-    name: "Community-Led Growth",
-    description: "Sua comunidade é o motor. Você constrói relacionamentos, fóruns e programas de advocacy.",
-    color: "from-orange-500 to-orange-600",
-    icon: "👥",
-  },
-  PLG2: {
-    name: "Partner-Led Growth",
-    description: "Parceiros vendem por você. Você recruta, habilita e incentiva resellers e integradores.",
-    color: "from-pink-500 to-pink-600",
-    icon: "🤝",
-  },
   FLG: {
     name: "Founder-Led Growth",
     description: "Você é o vendedor. Sua marca pessoal e rede são o principal motor de crescimento.",
@@ -126,11 +175,10 @@ export default function Home() {
     SLG: 0,
     PLG: 0,
     MLG: 0,
-    CLG: 0,
-    PLG2: 0,
     FLG: 0,
   });
   const [showResult, setShowResult] = useState(false);
+  const [, setLocation] = useLocation();
 
   const handleAnswer = (model: string) => {
     setScores((prev) => ({
@@ -157,31 +205,14 @@ export default function Home() {
     return primaryModel;
   };
 
-  const getSecondaryModel = () => {
-    const sortedModels = Object.entries(scores)
-      .filter(([model]) => model !== getPrimaryModel())
-      .sort(([, a], [, b]) => b - a);
-    return sortedModels[0]?.[0] || "";
-  };
-
-  const resetQuiz = () => {
-    setCurrentQuestion(0);
-    setScores({
-      SLG: 0,
-      PLG: 0,
-      MLG: 0,
-      CLG: 0,
-      PLG2: 0,
-      FLG: 0,
-    });
-    setShowResult(false);
-  };
-
-  const primaryModel = getPrimaryModel();
-  const secondaryModel = getSecondaryModel();
   const progress = ((currentQuestion + 1) / questions.length) * 100;
 
   if (showResult) {
+    const primaryModel = getPrimaryModel();
+    const handleViewDetails = () => {
+      setLocation(`/resultado/${primaryModel}`);
+    };
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
         <div className="w-full max-w-2xl">
@@ -197,20 +228,6 @@ export default function Home() {
                 <div className="text-5xl mb-4">{modelInfo[primaryModel as keyof typeof modelInfo].icon}</div>
                 <h2 className="text-3xl font-bold mb-3">{modelInfo[primaryModel as keyof typeof modelInfo].name}</h2>
                 <p className="text-lg opacity-90">{modelInfo[primaryModel as keyof typeof modelInfo].description}</p>
-              </div>
-
-              {/* Secondary Model */}
-              <div className="mb-8">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Modelo Secundário Recomendado</h3>
-                <div className={`bg-gradient-to-r ${modelInfo[secondaryModel as keyof typeof modelInfo].color} rounded-lg p-6 text-white`}>
-                  <div className="flex items-start gap-4">
-                    <div className="text-4xl">{modelInfo[secondaryModel as keyof typeof modelInfo].icon}</div>
-                    <div>
-                      <h4 className="text-xl font-bold mb-2">{modelInfo[secondaryModel as keyof typeof modelInfo].name}</h4>
-                      <p className="opacity-90">{modelInfo[secondaryModel as keyof typeof modelInfo].description}</p>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Score Breakdown */}
@@ -239,22 +256,14 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-4">
-                <Button
-                  onClick={resetQuiz}
-                  variant="outline"
-                  className="flex-1 gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Refazer Quiz
-                </Button>
-                <Button
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
-                >
-                  Compartilhar Resultado
-                </Button>
-              </div>
+              {/* Action */}
+              <Button
+                onClick={handleViewDetails}
+                className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg gap-2"
+              >
+                Ver Detalhes e Recomendações
+                <ArrowRight className="w-5 h-5" />
+              </Button>
             </div>
           </Card>
         </div>
