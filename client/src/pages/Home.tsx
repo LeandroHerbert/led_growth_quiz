@@ -176,6 +176,30 @@ export default function Home() {
     if (typeof window !== "undefined" && (window as any).umami) {
       (window as any).umami.track(eventName, data);
     }
+    
+    if (eventName === "quiz_answer_selected") {
+      const defaultAnalytics = { modelDistribution: { SLG: 0, PLG: 0, MLG: 0, FLG: 0 }, totalQuizzes: 0, completionRate: 0 };
+      const stored = localStorage.getItem("quiz_analytics");
+      const analytics = stored ? JSON.parse(stored) : defaultAnalytics;
+      
+      if (!analytics.modelDistribution) {
+        analytics.modelDistribution = { SLG: 0, PLG: 0, MLG: 0, FLG: 0 };
+      }
+      
+      const model = data.selected_model;
+      analytics.modelDistribution[model] = (analytics.modelDistribution[model] || 0) + 1;
+      localStorage.setItem("quiz_analytics", JSON.stringify(analytics));
+      console.log("Analytics updated:", analytics);
+    } else if (eventName === "quiz_completed") {
+      const defaultAnalytics = { modelDistribution: { SLG: 0, PLG: 0, MLG: 0, FLG: 0 }, totalQuizzes: 0, completionRate: 0 };
+      const stored = localStorage.getItem("quiz_analytics");
+      const analytics = stored ? JSON.parse(stored) : defaultAnalytics;
+      
+      analytics.totalQuizzes = (analytics.totalQuizzes || 0) + 1;
+      analytics.completionRate = 100;
+      localStorage.setItem("quiz_analytics", JSON.stringify(analytics));
+      console.log("Quiz completed, analytics:", analytics);
+    }
   }, []);
 
   const handleAnswer = useCallback(
@@ -352,13 +376,6 @@ export default function Home() {
         {/* Footer */}
         <div className="mt-12 flex flex-col items-center gap-4">
           <p className="text-gray-400 text-sm">Responda todas as perguntas para obter seu diagnóstico personalizado</p>
-          <Button
-            onClick={() => setLocation("/qrcode")}
-            variant="outline"
-            className="gap-2"
-          >
-            📱 Ver QR Code
-          </Button>
         </div>
       </div>
     </div>

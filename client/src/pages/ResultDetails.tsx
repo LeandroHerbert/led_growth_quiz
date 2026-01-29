@@ -432,9 +432,12 @@ export default function ResultDetails() {
         jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
       };
 
-      html2pdf().set(opt).from(element).save();
-
-      document.body.removeChild(element);
+      html2pdf().set(opt).from(element).save().then(() => {
+        document.body.removeChild(element);
+      }).catch((error: any) => {
+        console.error('PDF generation error:', error);
+        document.body.removeChild(element);
+      });
     } catch (error) {
       console.error('Error generating PDF:', error);
     } finally {
@@ -630,17 +633,10 @@ export default function ResultDetails() {
           <Button
             onClick={() => downloadPDF(model)}
             disabled={isDownloading}
-            className="flex-1 gap-2 bg-green-600 hover:bg-green-700"
+            className="w-full gap-2 bg-green-600 hover:bg-green-700"
           >
             <Download className="w-4 h-4" />
             {isDownloading ? 'Gerando PDF...' : 'Download Diagnóstico (PDF)'}
-          </Button>
-          <Button
-            onClick={() => setLocation("/")}
-            className="flex-1 gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Refazer Quiz
           </Button>
         </div>
       </div>
