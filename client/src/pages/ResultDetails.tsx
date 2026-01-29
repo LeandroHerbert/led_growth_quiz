@@ -2,7 +2,9 @@ import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle, AlertCircle, Target, TrendingUp, Download } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
+// @ts-ignore
+import html2pdf from "html2pdf.js";
 
 const modelDetails = {
   SLG: {
@@ -79,11 +81,11 @@ const modelDetails = {
     ],
 
     nextSteps: [
-      "Semana 1-2: Defina seu perfil de cliente ideal e crie lista de prospects",
-      "Semana 3-4: Estruture seu pitch e material de vendas",
-      "Mês 2: Comece a fazer contatos e agendar demos",
-      "Mês 3: Implemente CRM e comece a rastrear pipeline",
-      "Mês 4+: Contrate primeiro vendedor e replique processo",
+      "Semana 1-2: Documentar processo de vendas atual e identificar gaps",
+      "Semana 3-4: Recrutar ou treinar vendedores para preencher gaps",
+      "Mês 2: Implementar CRM e estruturar pipeline de vendas",
+      "Mês 3: Começar a medir e otimizar métricas de conversão",
+      "Mês 4+: Escalar equipe e processos conforme resultados",
     ],
   },
 
@@ -93,79 +95,79 @@ const modelDetails = {
     color: "from-purple-500 to-purple-600",
     shortDescription: "Seu crescimento é impulsionado pelo produto",
     
-    overview: "No modelo Product-Led Growth, o próprio produto é o principal vendedor. Os usuários experimentam o produto gratuitamente, descobrem valor rapidamente e se convertem em clientes pagos. Este modelo funciona bem para SaaS, ferramentas de produtividade e soluções que são fáceis de usar.",
+    overview: "No modelo Product-Led Growth, o próprio produto é o principal canal de aquisição e retenção. Os usuários descobrem valor rapidamente, experimentam sem fricção e convertem naturalmente. Este modelo funciona melhor para produtos intuitivos, com baixo ticket e fácil onboarding.",
     
     howItWorks: [
-      "Usuários acessam versão gratuita sem precisar falar com vendedor",
-      "Experiência é tão boa que eles naturalmente querem versão paga",
-      "Onboarding é otimizado para que entendam valor rapidamente",
-      "Referências e word-of-mouth crescem organicamente",
-      "Dados e feedback dos usuários guiam melhorias",
+      "Usuários descobrem e acessam o produto facilmente",
+      "Experimentam versão gratuita ou trial sem barreiras",
+      "Vivenciam valor rapidamente",
+      "Convertem para pagos quando veem benefício",
+      "Crescimento viral através de recomendações",
     ],
 
     strengths: [
-      "Escalável sem aumentar custos com vendas",
-      "Usuários experimentam antes de comprar",
-      "Menores custos de aquisição",
-      "Comunidade engajada e leal",
-      "Feedback constante para melhorar produto",
+      "Custo de aquisição muito baixo",
+      "Crescimento escalável sem aumentar equipe de vendas",
+      "Feedback direto dos usuários",
+      "Melhor retenção porque usuários já conhecem o produto",
+      "Crescimento viral e orgânico",
     ],
 
     weaknesses: [
-      "Requer produto muito bom desde o início",
-      "Difícil para produtos complexos que precisam explicação",
-      "Conversão de free para pago pode ser lenta",
+      "Requer produto muito bom e intuitivo",
+      "Difícil para produtos complexos",
+      "Conversão pode ser lenta",
+      "Menos eficaz para produtos caros",
       "Precisa de muitos usuários para gerar receita",
-      "Difícil para produtos B2B enterprise",
     ],
 
     applicationStrategies: [
       {
         title: "Otimizar Onboarding",
-        description: "Primeiros 5 minutos são críticos. Usuário precisa entender valor rapidamente. Use tours, tutoriais interativos e exemplos práticos.",
+        description: "Faça com que novos usuários vivenciem valor em minutos, não horas. Remova fricção. Cada clique a menos = mais conversão.",
       },
       {
         title: "Criar Versão Gratuita Atrativa",
-        description: "A versão gratuita precisa ser útil o suficiente para usuário usar regularmente, mas com limitações que o façam querer pagar.",
+        description: "Ofereça versão gratuita que mostra valor real. Limite features, não valor. Usuários devem querer pagar para ter mais.",
       },
       {
-        title: "Focar em Retenção",
-        description: "Usuários retidos viram clientes pagos. Envie dicas, atualizações, e mantenha contato. Use email e notificações no app.",
+        title: "Medir Engagement",
+        description: "Rastreie o que usuários fazem. Qual ação prediz conversão? Otimize para que mais usuários façam essa ação.",
       },
       {
-        title: "Incentivar Referências",
-        description: "Crie programa de referência. Quando usuário traz amigo, ambos ganham algo. Isso cresce exponencialmente.",
+        title: "Criar Conteúdo de Educação",
+        description: "Faça vídeos, tutoriais e guias mostrando como usar. Coloque no YouTube, Instagram, TikTok. Conteúdo educativo vira marketing.",
       },
       {
-        title: "Usar Dados para Melhorar",
-        description: "Rastreie como usuários usam o produto. Onde eles desistem? Que features usam mais? Use isso para melhorar.",
+        title: "Implementar Referral Program",
+        description: "Incentive usuários a indicar amigos. Ofereça desconto ou features extras. Crescimento viral é o melhor marketing.",
       },
     ],
 
     internalActions: [
-      "Melhorar continuamente a experiência do usuário",
-      "Criar tutoriais e documentação clara",
-      "Implementar analytics para entender comportamento",
-      "Fazer testes A/B no onboarding",
-      "Coletar feedback de usuários regularmente",
-      "Criar roadmap baseado em feedback",
+      "Melhorar experiência de onboarding do produto",
+      "Criar dashboard de analytics para rastrear engagement",
+      "Implementar sistema de feedback de usuários",
+      "Otimizar funil de conversão (free → paid)",
+      "Criar programa de referência",
+      "Treinar time de suporte para ser consultivo",
     ],
 
     externalActions: [
-      "Postar tutoriais no YouTube mostrando como usar",
-      "Criar reels no Instagram com dicas rápidas",
-      "Escrever blog posts sobre como resolver problemas",
-      "Participar de comunidades (Reddit, Discord) e ajudar",
-      "Fazer webinars gratuitos sobre o tema",
-      "Incentivar usuários a compartilhar nas redes",
+      "Criar tutoriais em vídeo no YouTube",
+      "Postar conteúdo educativo no Instagram e TikTok",
+      "Participar de comunidades online relevantes",
+      "Fazer webinars mostrando como usar o produto",
+      "Colaborar com influenciadores da área",
+      "Criar case studies de clientes bem-sucedidos",
     ],
 
     nextSteps: [
-      "Semana 1-2: Analise primeiros 5 minutos da experiência",
-      "Semana 3-4: Crie tutorial interativo para onboarding",
-      "Mês 2: Implemente analytics para rastrear comportamento",
-      "Mês 3: Crie programa de referência",
-      "Mês 4+: Comece a fazer conteúdo educativo no YouTube",
+      "Semana 1-2: Analisar jornada atual de novos usuários",
+      "Semana 3-4: Identificar pontos de fricção e remover",
+      "Mês 2: Implementar analytics para rastrear engagement",
+      "Mês 3: Criar conteúdo educativo e começar a publicar",
+      "Mês 4+: Testar e otimizar programa de referência",
     ],
   },
 
@@ -175,80 +177,79 @@ const modelDetails = {
     color: "from-green-500 to-green-600",
     shortDescription: "Seu crescimento é impulsionado pelo marketing",
     
-    overview: "No modelo Marketing-Led Growth, o marketing gera demanda através de conteúdo, publicidade e presença online. O foco está em atrair pessoas através de buscas, redes sociais e conteúdo de valor. Leads vêm educados e prontos para comprar.",
+    overview: "No modelo Marketing-Led Growth, o marketing é o principal motor de aquisição. Através de conteúdo, publicidade e presença online, você atrai e qualifica leads que depois são convertidos. Este modelo funciona bem para produtos com ciclo de venda médio e que precisam de educação.",
     
     howItWorks: [
-      "Criar conteúdo de valor (blog, vídeos, podcasts)",
-      "Otimizar para buscas (SEO) para aparecer no Google",
-      "Usar publicidade (Google Ads, Instagram, LinkedIn)",
-      "Capturar leads através de formulários",
-      "Nutrir leads com email marketing",
-      "Converter em clientes",
+      "Criar conteúdo relevante que atrai seu público",
+      "Publicar em blog, YouTube, Instagram, LinkedIn",
+      "Usar Google Ads e redes sociais para amplificar",
+      "Capturar emails de interessados",
+      "Nutrir leads com conteúdo até conversão",
     ],
 
     strengths: [
-      "Gera demanda consistente e previsível",
-      "Leads vêm educados e qualificados",
-      "Conteúdo fica disponível para sempre",
-      "Escalável sem aumentar equipe proporcionalmente",
-      "Custo por lead pode ser baixo",
+      "Escalável através de conteúdo e publicidade",
+      "Gera demanda consistente",
+      "Conteúdo continua gerando leads por meses",
+      "Melhor controle sobre custo de aquisição",
+      "Cria autoridade e marca",
     ],
 
     weaknesses: [
-      "Requer investimento inicial em conteúdo",
+      "Requer investimento em conteúdo e publicidade",
       "Resultados levam tempo (3-6 meses)",
+      "Precisa de expertise em marketing",
       "Competição por atenção é alta",
-      "Precisa de expertise em marketing digital",
-      "Publicidade pode ficar cara",
+      "Requer testes e otimização contínua",
     ],
 
     applicationStrategies: [
       {
-        title: "Criar Conteúdo de Valor",
-        description: "Escreva blog posts, crie vídeos, faça podcasts sobre temas que seu cliente se importa. Não venda, eduque. Conteúdo é o novo marketing.",
+        title: "Criar Estratégia de Conteúdo",
+        description: "Defina tópicos que seu público busca. Crie conteúdo em blog, vídeo, podcast. Foco em educação, não venda.",
       },
       {
-        title: "Otimizar para SEO",
-        description: "Use palavras-chave que seu cliente busca no Google. Escreva títulos e descrições que chamem atenção. Mais tráfego orgânico = menos custo.",
+        title: "Dominar SEO",
+        description: "Otimize conteúdo para Google. Palavras-chave certas = tráfego grátis. Blog bem feito é ativo que gera leads por anos.",
       },
       {
-        title: "Usar Publicidade Estratégica",
-        description: "Google Ads para quem busca solução. Instagram/TikTok para awareness. LinkedIn para B2B. Comece pequeno, teste, escale o que funciona.",
+        title: "Usar Redes Sociais Estrategicamente",
+        description: "Instagram, TikTok, LinkedIn. Escolha onde seu público está. Poste 2-3x por semana. Engajamento > seguidores.",
       },
       {
-        title: "Capturar Leads",
-        description: "Ofereça algo de valor (ebook, webinar, template) em troca de email. Isso constrói sua lista de contatos.",
+        title: "Investir em Google Ads",
+        description: "Google Ads traz resultados rápidos. Comece com orçamento pequeno, teste, otimize. Cada real gasto deve trazer mais de volta.",
       },
       {
-        title: "Nutrir com Email",
-        description: "Envie emails úteis regularmente. Mantenha seu nome em mente. Quando precisarem, vão lembrar de você.",
+        title: "Construir Email List",
+        description: "Email é seu ativo. Capture emails através de conteúdo gratuito. Envie newsletter semanal com valor. Email converte melhor que redes.",
       },
     ],
 
     internalActions: [
-      "Criar calendário de conteúdo para 3 meses",
-      "Escrever 2-3 blog posts por semana",
-      "Produzir vídeos para YouTube (1-2 por semana)",
-      "Criar templates, guias, checklists para download",
-      "Implementar email marketing",
-      "Rastrear métricas (tráfego, leads, conversão)",
+      "Criar calendário editorial de conteúdo",
+      "Implementar blog e otimizar para SEO",
+      "Configurar Google Analytics e rastrear conversões",
+      "Criar landing pages para cada campanha",
+      "Implementar email marketing automation",
+      "Treinar time em marketing digital",
     ],
 
     externalActions: [
-      "Postar 3-5 vezes por semana no Instagram",
-      "Fazer reels curtos e virais no Instagram/TikTok",
-      "Postar artigos no LinkedIn",
-      "Investir em Google Ads para palavras-chave principais",
-      "Investir em Instagram Ads para awareness",
-      "Participar de comunidades online e ajudar",
+      "Publicar 2-3 posts por semana no blog",
+      "Criar vídeos educativos no YouTube",
+      "Postar conteúdo diário no Instagram e TikTok",
+      "Fazer campanhas de Google Ads",
+      "Participar de comunidades online",
+      "Fazer parcerias com outros criadores de conteúdo",
     ],
 
     nextSteps: [
-      "Semana 1-2: Pesquise palavras-chave que seu cliente busca",
-      "Semana 3-4: Crie plano de conteúdo para 3 meses",
-      "Mês 2: Comece a publicar blog posts (2-3 por semana)",
-      "Mês 3: Crie primeiro vídeo para YouTube",
-      "Mês 4+: Comece com publicidade paga (Google Ads ou Instagram)",
+      "Semana 1-2: Definir estratégia de conteúdo e palavras-chave",
+      "Semana 3-4: Criar primeiros 5 posts de blog otimizados",
+      "Mês 2: Começar a publicar em redes sociais regularmente",
+      "Mês 3: Lançar primeira campanha de Google Ads",
+      "Mês 4+: Escalar conteúdo e publicidade conforme resultados",
     ],
   },
 
@@ -258,80 +259,79 @@ const modelDetails = {
     color: "from-red-500 to-red-600",
     shortDescription: "Seu crescimento é impulsionado pelo fundador",
     
-    overview: "No modelo Founder-Led Growth, você é o principal motor de crescimento. Sua marca pessoal, rede e credibilidade atraem clientes. Você faz vendas, cria conteúdo, participa de eventos. Este modelo é comum em startups iniciais e para consultores.",
+    overview: "No modelo Founder-Led Growth, o fundador é o principal motor de crescimento. Através de sua rede, credibilidade pessoal e presença, ele atrai clientes, parceiros e investidores. Este modelo é comum em startups iniciais e em negócios baseados em expertise pessoal.",
     
     howItWorks: [
-      "Você constrói presença pessoal online (LinkedIn, Twitter, etc)",
-      "Compartilha conhecimento e insights regularmente",
-      "Sua rede e reputação geram oportunidades",
-      "Você faz vendas diretas e relacionamentos",
-      "Clientes compram porque confiam em você",
-      "Referências crescem naturalmente",
+      "Fundador usa sua rede pessoal para conseguir clientes",
+      "Constrói credibilidade através de conteúdo e presença",
+      "Faz vendas diretas e relacionamentos pessoais",
+      "Participa de eventos e comunidades",
+      "Cria buzz e atrai atenção da mídia",
     ],
 
     strengths: [
-      "Rápido para começar (não precisa de estrutura)",
-      "Custo baixo (usa sua própria rede)",
-      "Relacionamentos são fortes e leais",
-      "Feedback direto dos clientes",
-      "Flexibilidade para pivotar",
+      "Crescimento rápido nos primeiros meses",
+      "Relacionamentos geram lealdade",
+      "Fundador tem autonomia total",
+      "Custo inicial baixo",
+      "Feedback direto de clientes",
     ],
 
     weaknesses: [
-      "Não escalável (você é o gargalo)",
-      "Dependência total em você",
-      "Se você sair, negócio para",
-      "Difícil de vender empresa depois",
-      "Exige muito tempo seu",
+      "Não escala sem delegar",
+      "Dependência total do fundador",
+      "Difícil contratar sem processos",
+      "Fundador fica sobrecarregado",
+      "Crescimento limita-se à rede do fundador",
     ],
 
     applicationStrategies: [
       {
         title: "Construir Presença Online",
-        description: "Crie perfil profissional no LinkedIn. Poste regularmente sobre sua indústria. Compartilhe insights, aprendizados, histórias. Seja autêntico.",
-      },
-      {
-        title: "Usar Sua Rede",
-        description: "Converse com pessoas que conhece. Conte sobre o que está fazendo. Peça indicações. Sua rede é seu maior ativo.",
-      },
-      {
-        title: "Fazer Vendas Diretas",
-        description: "Não tenha medo de vender. Converse com potenciais clientes. Entenda seus problemas. Ofereça solução. Relacionamento é tudo.",
-      },
-      {
-        title: "Criar Conteúdo Pessoal",
-        description: "Escreva posts, faça vídeos, participe de podcasts. Compartilhe sua expertise. Isso constrói autoridade e atrai clientes.",
+        description: "LinkedIn, Twitter, YouTube. Compartilhe insights sobre sua indústria. Construa audiência. Audiência = clientes potenciais.",
       },
       {
         title: "Participar de Comunidades",
-        description: "Junte-se a grupos, eventos, conferências. Conheça pessoas. Ajude sem esperar retorno. Relacionamentos geram negócios.",
+        description: "Encontre comunidades onde seu cliente ideal está. Participe ativamente. Ajude pessoas. Relacionamentos viram negócios.",
+      },
+      {
+        title: "Fazer Vendas Diretas",
+        description: "Ligue, envie email, converse. Relacionamento pessoal é poderoso. Você é o melhor vendedor do seu produto.",
+      },
+      {
+        title: "Criar Conteúdo Pessoal",
+        description: "Escreva sobre sua jornada, aprendizados, insights. Conteúdo autêntico atrai pessoas que se identificam com você.",
+      },
+      {
+        title: "Buscar Parcerias Estratégicas",
+        description: "Encontre pessoas/empresas complementares. Faça parcerias que beneficiam ambos. Crescimento mútuo.",
       },
     ],
 
     internalActions: [
-      "Dedicar tempo diário para networking",
-      "Postar regularmente no LinkedIn (3-5x por semana)",
-      "Manter lista de contatos atualizada",
-      "Fazer follow-up com potenciais clientes",
-      "Documentar case studies e resultados",
-      "Preparar pitch claro sobre o que você faz",
+      "Definir processo de vendas para replicar",
+      "Documentar playbook de como você vende",
+      "Começar a delegar tarefas operacionais",
+      "Criar sistema de CRM simples",
+      "Treinar primeiro vendedor/operacional",
+      "Medir quais ações geram mais clientes",
     ],
 
     externalActions: [
-      "Participar de eventos e conferências da indústria",
-      "Fazer podcasts como convidado",
-      "Escrever artigos em publicações importantes",
-      "Participar de comunidades online (Slack, Discord, etc)",
-      "Fazer lives no Instagram/LinkedIn compartilhando conhecimento",
-      "Conectar-se com influenciadores e parceiros",
+      "Postar conteúdo pessoal 3-4x por semana no LinkedIn",
+      "Fazer 5-10 ligações/contatos por semana",
+      "Participar de 1-2 eventos por mês",
+      "Criar conteúdo em vídeo (YouTube, TikTok)",
+      "Fazer podcast ou entrevistas",
+      "Construir relacionamento com jornalistas e influenciadores",
     ],
 
     nextSteps: [
-      "Semana 1-2: Otimize seu perfil do LinkedIn",
-      "Semana 3-4: Comece a postar 3x por semana",
-      "Mês 2: Converse com 10 pessoas da sua rede",
-      "Mês 3: Participe de 1 evento ou webinar",
-      "Mês 4+: Faça seu primeiro podcast como convidado",
+      "Semana 1-2: Mapear sua rede e identificar 20 prospects",
+      "Semana 3-4: Fazer contato com 10 prospects",
+      "Mês 2: Começar a postar conteúdo regularmente",
+      "Mês 3: Fechar primeiros clientes e documentar processo",
+      "Mês 4+: Começar a delegar e escalar",
     ],
   },
 };
@@ -341,84 +341,102 @@ export default function ResultDetails() {
   const [, setLocation] = useLocation();
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const downloadQRCode = (model: string) => {
+  const downloadPDF = (model: string) => {
     setIsDownloading(true);
     try {
       const details = modelDetails[model as keyof typeof modelDetails];
       
-      // Create text content
-      const textContent = `DIAGNÓSTICO DE LED GROWTH
-================================================================================
+      const htmlContent = `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; border-radius: 8px; margin-bottom: 30px;">
+            <div style="font-size: 48px; margin-bottom: 15px;">${details.icon}</div>
+            <h1 style="margin: 0; font-size: 32px; font-weight: bold;">${details.name}</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">${details.shortDescription}</p>
+          </div>
 
-${details.icon} ${details.name}
-${details.shortDescription}
+          <div style="margin-bottom: 30px;">
+            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">O Que É?</h2>
+            <p style="text-align: justify;">${details.overview}</p>
+          </div>
 
-================================================================================
+          <div style="margin-bottom: 30px;">
+            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">Como Funciona</h2>
+            <ol style="margin: 0; padding-left: 20px;">
+              ${details.howItWorks.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
+            </ol>
+          </div>
 
-O QUE É?
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+            <div>
+              <h2 style="color: #22c55e; font-size: 20px; border-bottom: 3px solid #22c55e; padding-bottom: 10px; margin-bottom: 15px;">Pontos Fortes</h2>
+              <ul style="margin: 0; padding-left: 20px;">
+                ${details.strengths.map(item => `<li style="margin-bottom: 8px; color: #22c55e;">✓ ${item}</li>`).join('')}
+              </ul>
+            </div>
+            <div>
+              <h2 style="color: #ef4444; font-size: 20px; border-bottom: 3px solid #ef4444; padding-bottom: 10px; margin-bottom: 15px;">Pontos Fracos</h2>
+              <ul style="margin: 0; padding-left: 20px;">
+                ${details.weaknesses.map(item => `<li style="margin-bottom: 8px; color: #ef4444;">✗ ${item}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
 
-${details.overview}
+          <div style="margin-bottom: 30px;">
+            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">O Que Fazer Agora</h2>
+            ${details.applicationStrategies.map(s => `
+              <div style="background: #f0f9ff; border-left: 4px solid #667eea; padding: 15px; margin-bottom: 15px; border-radius: 4px;">
+                <h3 style="margin: 0 0 8px 0; color: #667eea; font-size: 16px;">${s.title}</h3>
+                <p style="margin: 0; font-size: 14px;">${s.description}</p>
+              </div>
+            `).join('')}
+          </div>
 
-================================================================================
+          <div style="margin-bottom: 30px;">
+            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">Ações Internas</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+              ${details.internalActions.map(action => `<li style="margin-bottom: 8px;">${action}</li>`).join('')}
+            </ul>
+          </div>
 
-COMO FUNCIONA
+          <div style="margin-bottom: 30px;">
+            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">Ações Externas</h2>
+            <ul style="margin: 0; padding-left: 20px;">
+              ${details.externalActions.map(action => `<li style="margin-bottom: 8px;">${action}</li>`).join('')}
+            </ul>
+          </div>
 
-${details.howItWorks.map((item, i) => `${i + 1}. ${item}`).join('\n')}
+          <div style="margin-bottom: 30px;">
+            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">Seu Plano de Ação</h2>
+            <ol style="margin: 0; padding-left: 20px;">
+              ${details.nextSteps.map(step => `<li style="margin-bottom: 12px;">${step}</li>`).join('')}
+            </ol>
+          </div>
 
-================================================================================
+          <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; text-align: center; color: #999; font-size: 12px;">
+            <p style="margin: 0;">Diagnóstico gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+            <p style="margin: 5px 0 0 0;">Quiz de Led Growth - Descubra sua estratégia de crescimento predominante</p>
+          </div>
+        </div>
+      `;
 
-PONTOS FORTES
-
-${details.strengths.map(item => `✓ ${item}`).join('\n')}
-
-================================================================================
-
-PONTOS FRACOS
-
-${details.weaknesses.map(item => `✗ ${item}`).join('\n')}
-
-================================================================================
-
-O QUE FAZER AGORA
-
-${details.applicationStrategies.map(s => `\n${s.title}\n${s.description}`).join('\n')}
-
-================================================================================
-
-AÇÕES INTERNAS
-
-${details.internalActions.map(action => `• ${action}`).join('\n')}
-
-================================================================================
-
-AÇÕES EXTERNAS
-
-${details.externalActions.map(action => `• ${action}`).join('\n')}
-
-================================================================================
-
-SEU PLANO DE AÇÃO
-
-${details.nextSteps.map((step, i) => `${i + 1}. ${step}`).join('\n')}
-
-================================================================================
-
-Diagnóstico gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}
-Quiz de Led Growth - Descubra sua estratégia de crescimento predominante
-
-================================================================================
-`;
-
-      // Create download link
-      const element = document.createElement('a');
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textContent));
-      element.setAttribute('download', `Diagnostico-${details.name.replace(/\s+/g, '-')}.txt`);
+      const element = document.createElement('div');
+      element.innerHTML = htmlContent;
       element.style.display = 'none';
       document.body.appendChild(element);
-      element.click();
+
+      const opt: any = {
+        margin: 10,
+        filename: `Diagnostico-${details.name.replace(/\s+/g, '-')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
+      };
+
+      html2pdf().set(opt).from(element).save();
+
       document.body.removeChild(element);
     } catch (error) {
-      console.error('Error generating file:', error);
+      console.error('Error generating PDF:', error);
     } finally {
       setIsDownloading(false);
     }
@@ -427,30 +445,28 @@ Quiz de Led Growth - Descubra sua estratégia de crescimento predominante
   if (!match) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Modelo não encontrado</h1>
-          <Button onClick={() => setLocation("/")} className="gap-2">
-            <ArrowLeft className="w-4 h-4" />
+        <Card className="bg-white p-8">
+          <p className="text-gray-900">Modelo não encontrado</p>
+          <Button onClick={() => setLocation("/")} className="mt-4">
             Voltar ao Quiz
           </Button>
-        </div>
+        </Card>
       </div>
     );
   }
 
-  const model = params?.model as string;
+  const model = params?.model || "";
   const details = modelDetails[model as keyof typeof modelDetails];
 
   if (!details) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-4">Modelo não encontrado</h1>
-          <Button onClick={() => setLocation("/")} className="gap-2">
-            <ArrowLeft className="w-4 h-4" />
+        <Card className="bg-white p-8">
+          <p className="text-gray-900">Modelo inválido</p>
+          <Button onClick={() => setLocation("/")} className="mt-4">
             Voltar ao Quiz
           </Button>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -474,114 +490,129 @@ Quiz de Led Growth - Descubra sua estratégia de crescimento predominante
         {/* Title */}
         <div className="mb-12">
           <h1 className="text-5xl font-bold text-white mb-4">
-            {details.icon} {details.name}
+            Seu Diagnóstico Completo
           </h1>
-          <p className="text-xl text-gray-300">{details.shortDescription}</p>
+          <p className="text-xl text-gray-300">
+            Recomendações estratégicas e plano de ação para seu modelo
+          </p>
         </div>
+
+        {/* Primary Model */}
+        <Card className={`bg-gradient-to-r ${details.color} rounded-lg p-8 text-white mb-8`}>
+          <div className="text-5xl mb-4">{details.icon}</div>
+          <h2 className="text-3xl font-bold mb-3">{details.name}</h2>
+          <p className="text-lg opacity-90">{details.shortDescription}</p>
+        </Card>
 
         {/* Overview */}
         <Card className="bg-white p-8 mb-8">
-          <h2 className="text-2xl font-bold mb-4">O Que É?</h2>
-          <p className="text-gray-700 leading-relaxed">{details.overview}</p>
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Target className="w-6 h-6 text-blue-600" />
+            O Que É?
+          </h2>
+          <p className="text-gray-700 text-lg leading-relaxed">{details.overview}</p>
         </Card>
 
         {/* How It Works */}
         <Card className="bg-white p-8 mb-8">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <Target className="w-6 h-6 text-blue-600" />
+            <TrendingUp className="w-6 h-6 text-green-600" />
             Como Funciona
           </h2>
-          <ul className="space-y-3">
+          <div className="space-y-4">
             {details.howItWorks.map((item, idx) => (
-              <li key={idx} className="flex gap-3 text-gray-700">
-                <span className="text-blue-600 font-bold">{idx + 1}.</span>
-                <span>{item}</span>
-              </li>
+              <div key={idx} className="flex gap-4">
+                <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-blue-700 font-bold text-sm">{idx + 1}</span>
+                </div>
+                <p className="text-gray-700 pt-1">{item}</p>
+              </div>
             ))}
-          </ul>
+          </div>
         </Card>
 
         {/* Strengths and Weaknesses */}
         <div className="grid md:grid-cols-2 gap-8 mb-8">
           <Card className="bg-white p-8">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <CheckCircle className="w-6 h-6 text-green-600" />
               Pontos Fortes
             </h2>
-            <ul className="space-y-2">
+            <div className="space-y-3">
               {details.strengths.map((strength, idx) => (
-                <li key={idx} className="flex gap-2 text-gray-700 text-sm">
+                <div key={idx} className="flex gap-3">
                   <span className="text-green-600 font-bold">✓</span>
-                  <span>{strength}</span>
-                </li>
+                  <p className="text-gray-700">{strength}</p>
+                </div>
               ))}
-            </ul>
+            </div>
           </Card>
 
           <Card className="bg-white p-8">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
               <AlertCircle className="w-6 h-6 text-red-600" />
               Pontos Fracos
             </h2>
-            <ul className="space-y-2">
+            <div className="space-y-3">
               {details.weaknesses.map((weakness, idx) => (
-                <li key={idx} className="flex gap-2 text-gray-700 text-sm">
+                <div key={idx} className="flex gap-3">
                   <span className="text-red-600 font-bold">✗</span>
-                  <span>{weakness}</span>
-                </li>
+                  <p className="text-gray-700">{weakness}</p>
+                </div>
               ))}
-            </ul>
+            </div>
           </Card>
         </div>
 
         {/* Application Strategies */}
         <Card className="bg-white p-8 mb-8">
           <h2 className="text-2xl font-bold mb-6">O Que Fazer Agora</h2>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {details.applicationStrategies.map((strategy, idx) => (
-              <div key={idx} className="pb-6 border-b last:border-b-0">
-                <h3 className="text-lg font-bold text-blue-600 mb-2">{strategy.title}</h3>
+              <div
+                key={idx}
+                className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded"
+              >
+                <h3 className="font-bold text-blue-900 mb-2">{strategy.title}</h3>
                 <p className="text-gray-700">{strategy.description}</p>
               </div>
             ))}
           </div>
         </Card>
 
-        {/* Actions */}
-        <div className="grid md:grid-cols-2 gap-8 mb-8">
-          <Card className="bg-white p-8">
-            <h2 className="text-xl font-bold mb-4">Ações Internas</h2>
-            <p className="text-sm text-gray-600 mb-4">O que fazer dentro da empresa:</p>
-            <ul className="space-y-2">
-              {details.internalActions.map((action, idx) => (
-                <li key={idx} className="flex gap-2 text-gray-700 text-sm">
-                  <span className="text-blue-600 font-bold">→</span>
-                  <span>{action}</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
+        {/* Internal Actions */}
+        <Card className="bg-white p-8 mb-8">
+          <h2 className="text-2xl font-bold mb-6">Ações Internas</h2>
+          <div className="space-y-3">
+            {details.internalActions.map((action, idx) => (
+              <div key={idx} className="flex gap-3">
+                <div className="flex-shrink-0 w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-purple-700 font-bold text-xs">•</span>
+                </div>
+                <p className="text-gray-700 pt-0.5">{action}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
 
-          <Card className="bg-white p-8">
-            <h2 className="text-xl font-bold mb-4">Ações Externas</h2>
-            <p className="text-sm text-gray-600 mb-4">O que fazer no mercado:</p>
-            <ul className="space-y-2">
-              {details.externalActions.map((action, idx) => (
-                <li key={idx} className="flex gap-2 text-gray-700 text-sm">
-                  <span className="text-green-600 font-bold">→</span>
-                  <span>{action}</span>
-                </li>
-              ))}
-            </ul>
-          </Card>
-        </div>
+        {/* External Actions */}
+        <Card className="bg-white p-8 mb-8">
+          <h2 className="text-2xl font-bold mb-6">Ações Externas</h2>
+          <div className="space-y-3">
+            {details.externalActions.map((action, idx) => (
+              <div key={idx} className="flex gap-3">
+                <div className="flex-shrink-0 w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center">
+                  <span className="text-orange-700 font-bold text-xs">•</span>
+                </div>
+                <p className="text-gray-700 pt-0.5">{action}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
 
         {/* Next Steps */}
         <Card className="bg-white p-8 mb-8">
-          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-green-600" />
-            Seu Plano de Ação
-          </h2>
+          <h2 className="text-2xl font-bold mb-6">Seu Plano de Ação</h2>
           <div className="space-y-4">
             {details.nextSteps.map((step, idx) => (
               <div key={idx} className="flex gap-4">
@@ -597,12 +628,12 @@ Quiz de Led Growth - Descubra sua estratégia de crescimento predominante
         {/* Footer */}
         <div className="flex gap-4 w-full mt-8">
           <Button
-            onClick={() => downloadQRCode(model)}
+            onClick={() => downloadPDF(model)}
             disabled={isDownloading}
             className="flex-1 gap-2 bg-green-600 hover:bg-green-700"
           >
             <Download className="w-4 h-4" />
-            {isDownloading ? 'Gerando...' : 'Download Diagnóstico'}
+            {isDownloading ? 'Gerando PDF...' : 'Download Diagnóstico (PDF)'}
           </Button>
           <Button
             onClick={() => setLocation("/")}
