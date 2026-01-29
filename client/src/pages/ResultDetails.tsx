@@ -1,10 +1,8 @@
-import { useRoute, useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, CheckCircle, AlertCircle, Target, TrendingUp, Download } from "lucide-react";
-import { useState, useRef } from "react";
-// @ts-ignore
-import html2pdf from "html2pdf.js";
+import { useState } from "react";
 
 const modelDetails = {
   SLG: {
@@ -98,76 +96,76 @@ const modelDetails = {
     overview: "No modelo Product-Led Growth, o próprio produto é o principal canal de aquisição e retenção. Os usuários descobrem valor rapidamente, experimentam sem fricção e convertem naturalmente. Este modelo funciona melhor para produtos intuitivos, com baixo ticket e fácil onboarding.",
     
     howItWorks: [
-      "Usuários descobrem e acessam o produto facilmente",
-      "Experimentam versão gratuita ou trial sem barreiras",
-      "Vivenciam valor rapidamente",
-      "Convertem para pagos quando veem benefício",
-      "Crescimento viral através de recomendações",
+      "Usuários experimentam o produto gratuitamente ou com trial",
+      "Produto é tão bom que eles continuam usando",
+      "Upgrade para versão paga acontece naturalmente",
+      "Produto se vende sozinho pela experiência",
+      "Foco em facilitar uso e remover barreiras",
     ],
 
     strengths: [
-      "Custo de aquisição muito baixo",
-      "Crescimento escalável sem aumentar equipe de vendas",
-      "Feedback direto dos usuários",
-      "Melhor retenção porque usuários já conhecem o produto",
-      "Crescimento viral e orgânico",
+      "Crescimento rápido e escalável",
+      "Custo de aquisição baixo",
+      "Produto se vende sozinho",
+      "Usuários já conhecem o valor antes de pagar",
+      "Viral: usuários trazem outros usuários",
     ],
 
     weaknesses: [
-      "Requer produto muito bom e intuitivo",
+      "Produto precisa ser muito bom e fácil de usar",
       "Difícil para produtos complexos",
-      "Conversão pode ser lenta",
-      "Menos eficaz para produtos caros",
-      "Precisa de muitos usuários para gerar receita",
+      "Requer investimento grande em produto",
+      "Conversão de gratuito para pago pode ser baixa",
+      "Competição alta em produtos simples",
     ],
 
     applicationStrategies: [
       {
-        title: "Otimizar Onboarding",
-        description: "Faça com que novos usuários vivenciem valor em minutos, não horas. Remova fricção. Cada clique a menos = mais conversão.",
+        title: "Simplificar Onboarding",
+        description: "Faça o primeiro uso ser rápido e fácil. Remova cadastros longos. Deixe o usuário experimentar antes de pedir informações.",
       },
       {
         title: "Criar Versão Gratuita Atrativa",
-        description: "Ofereça versão gratuita que mostra valor real. Limite features, não valor. Usuários devem querer pagar para ter mais.",
+        description: "Ofereça funcionalidades úteis de graça, mas limite o suficiente para que usuários queiram pagar. Exemplo: limite de projetos ou usuários.",
       },
       {
-        title: "Medir Engagement",
-        description: "Rastreie o que usuários fazem. Qual ação prediz conversão? Otimize para que mais usuários façam essa ação.",
+        title: "Melhorar Experiência do Usuário",
+        description: "Invista em design, velocidade e usabilidade. Produto precisa ser intuitivo. Se usuário precisa de tutorial longo, algo está errado.",
       },
       {
-        title: "Criar Conteúdo de Educação",
-        description: "Faça vídeos, tutoriais e guias mostrando como usar. Coloque no YouTube, Instagram, TikTok. Conteúdo educativo vira marketing.",
+        title: "Adicionar Viralidade",
+        description: "Facilite compartilhamento. Exemplo: convites para colaboradores, templates públicos, integração com redes sociais.",
       },
       {
-        title: "Implementar Referral Program",
-        description: "Incentive usuários a indicar amigos. Ofereça desconto ou features extras. Crescimento viral é o melhor marketing.",
+        title: "Medir e Otimizar Conversão",
+        description: "Acompanhe onde usuários desistem. Teste mudanças pequenas (A/B testing). Foque em remover barreiras para upgrade.",
       },
     ],
 
     internalActions: [
-      "Melhorar experiência de onboarding do produto",
-      "Criar dashboard de analytics para rastrear engagement",
-      "Implementar sistema de feedback de usuários",
-      "Otimizar funil de conversão (free → paid)",
-      "Criar programa de referência",
-      "Treinar time de suporte para ser consultivo",
+      "Investir em equipe de produto e design",
+      "Criar sistema de analytics robusto",
+      "Implementar onboarding guiado",
+      "Testar e iterar constantemente",
+      "Medir métricas de ativação e retenção",
+      "Criar loops virais no produto",
     ],
 
     externalActions: [
-      "Criar tutoriais em vídeo no YouTube",
-      "Postar conteúdo educativo no Instagram e TikTok",
+      "Criar tutoriais e vídeos no YouTube",
+      "Postar reels no Instagram mostrando como usar",
+      "Fazer SEO para aparecer em buscas",
+      "Criar templates e recursos gratuitos",
       "Participar de comunidades online relevantes",
-      "Fazer webinars mostrando como usar o produto",
-      "Colaborar com influenciadores da área",
-      "Criar case studies de clientes bem-sucedidos",
+      "Fazer parcerias com influenciadores",
     ],
 
     nextSteps: [
-      "Semana 1-2: Analisar jornada atual de novos usuários",
-      "Semana 3-4: Identificar pontos de fricção e remover",
-      "Mês 2: Implementar analytics para rastrear engagement",
-      "Mês 3: Criar conteúdo educativo e começar a publicar",
-      "Mês 4+: Testar e otimizar programa de referência",
+      "Semana 1-2: Mapear jornada do usuário e identificar pontos de fricção",
+      "Semana 3-4: Simplificar onboarding e primeiros passos",
+      "Mês 2: Implementar analytics e começar a medir conversão",
+      "Mês 3: Testar melhorias no produto baseadas em dados",
+      "Mês 4+: Adicionar funcionalidades virais e otimizar retenção",
     ],
   },
 
@@ -177,79 +175,79 @@ const modelDetails = {
     color: "from-green-500 to-green-600",
     shortDescription: "Seu crescimento é impulsionado pelo marketing",
     
-    overview: "No modelo Marketing-Led Growth, o marketing é o principal motor de aquisição. Através de conteúdo, publicidade e presença online, você atrai e qualifica leads que depois são convertidos. Este modelo funciona bem para produtos com ciclo de venda médio e que precisam de educação.",
+    overview: "No modelo Marketing-Led Growth, o marketing é o principal motor de geração de demanda e aquisição de clientes. Este modelo funciona através de conteúdo, publicidade, SEO e presença online forte. É eficaz para produtos com ticket médio e ciclos de venda moderados.",
     
     howItWorks: [
-      "Criar conteúdo relevante que atrai seu público",
-      "Publicar em blog, YouTube, Instagram, LinkedIn",
-      "Usar Google Ads e redes sociais para amplificar",
-      "Capturar emails de interessados",
-      "Nutrir leads com conteúdo até conversão",
+      "Criar conteúdo relevante que atrai audiência",
+      "Usar SEO para aparecer em buscas do Google",
+      "Investir em anúncios pagos (Google Ads, Instagram, etc)",
+      "Construir presença forte em redes sociais",
+      "Gerar leads e nutrir até estarem prontos para comprar",
     ],
 
     strengths: [
-      "Escalável através de conteúdo e publicidade",
-      "Gera demanda consistente",
-      "Conteúdo continua gerando leads por meses",
-      "Melhor controle sobre custo de aquisição",
-      "Cria autoridade e marca",
+      "Escalável através de canais digitais",
+      "Gera demanda constante de leads",
+      "Funciona para diversos tipos de produtos",
+      "Mensurável e otimizável",
+      "Constrói autoridade e marca",
     ],
 
     weaknesses: [
-      "Requer investimento em conteúdo e publicidade",
-      "Resultados levam tempo (3-6 meses)",
-      "Precisa de expertise em marketing",
-      "Competição por atenção é alta",
-      "Requer testes e otimização contínua",
+      "Requer investimento constante em marketing",
+      "Competição alta em canais pagos",
+      "Demora para ver resultados de SEO e conteúdo",
+      "Precisa de equipe especializada",
+      "Custo de aquisição pode ser alto",
     ],
 
     applicationStrategies: [
       {
-        title: "Criar Estratégia de Conteúdo",
-        description: "Defina tópicos que seu público busca. Crie conteúdo em blog, vídeo, podcast. Foco em educação, não venda.",
+        title: "Criar Conteúdo Valioso",
+        description: "Publique artigos, vídeos e posts que resolvem problemas reais. Foque em educar, não vender. Isso atrai audiência e gera confiança.",
       },
       {
-        title: "Dominar SEO",
-        description: "Otimize conteúdo para Google. Palavras-chave certas = tráfego grátis. Blog bem feito é ativo que gera leads por anos.",
+        title: "Investir em SEO",
+        description: "Otimize seu site para aparecer no Google. Pesquise palavras-chave que seu público busca. Crie conteúdo em torno dessas palavras.",
       },
       {
-        title: "Usar Redes Sociais Estrategicamente",
-        description: "Instagram, TikTok, LinkedIn. Escolha onde seu público está. Poste 2-3x por semana. Engajamento > seguidores.",
+        title: "Usar Anúncios Pagos",
+        description: "Teste Google Ads e anúncios em redes sociais. Comece pequeno, meça resultados, escale o que funciona. Foque em ROI positivo.",
       },
       {
-        title: "Investir em Google Ads",
-        description: "Google Ads traz resultados rápidos. Comece com orçamento pequeno, teste, otimize. Cada real gasto deve trazer mais de volta.",
+        title: "Construir Presença Social",
+        description: "Poste regularmente no Instagram, LinkedIn ou TikTok. Engaje com audiência. Compartilhe cases, dicas e bastidores.",
       },
       {
-        title: "Construir Email List",
-        description: "Email é seu ativo. Capture emails através de conteúdo gratuito. Envie newsletter semanal com valor. Email converte melhor que redes.",
+        title: "Nutrir Leads",
+        description: "Capture emails e mantenha contato. Envie conteúdo relevante. Não venda logo de cara. Eduque até estarem prontos para comprar.",
       },
     ],
 
     internalActions: [
+      "Montar equipe de marketing (conteúdo, SEO, ads)",
       "Criar calendário editorial de conteúdo",
-      "Implementar blog e otimizar para SEO",
-      "Configurar Google Analytics e rastrear conversões",
-      "Criar landing pages para cada campanha",
-      "Implementar email marketing automation",
-      "Treinar time em marketing digital",
+      "Implementar ferramentas de automação de marketing",
+      "Definir personas e jornada do cliente",
+      "Medir e otimizar métricas de marketing (CAC, LTV, ROI)",
+      "Criar processos de geração e qualificação de leads",
     ],
 
     externalActions: [
-      "Publicar 2-3 posts por semana no blog",
+      "Publicar 2-3 artigos por semana no blog",
       "Criar vídeos educativos no YouTube",
-      "Postar conteúdo diário no Instagram e TikTok",
-      "Fazer campanhas de Google Ads",
-      "Participar de comunidades online",
-      "Fazer parcerias com outros criadores de conteúdo",
+      "Postar diariamente no Instagram e LinkedIn",
+      "Investir em Google Ads e anúncios sociais",
+      "Fazer guest posts em sites relevantes",
+      "Participar de podcasts e webinars",
     ],
 
     nextSteps: [
-      "Semana 1-2: Definir estratégia de conteúdo e palavras-chave",
-      "Semana 3-4: Criar primeiros 5 posts de blog otimizados",
-      "Mês 2: Começar a publicar em redes sociais regularmente",
-      "Mês 3: Lançar primeira campanha de Google Ads",
-      "Mês 4+: Escalar conteúdo e publicidade conforme resultados",
+      "Semana 1-2: Definir personas e mapear jornada do cliente",
+      "Semana 3-4: Criar calendário de conteúdo e começar a publicar",
+      "Mês 2: Implementar SEO básico e começar a investir em ads",
+      "Mês 3: Medir resultados e otimizar canais que funcionam",
+      "Mês 4+: Escalar investimento em canais com ROI positivo",
     ],
   },
 
@@ -259,187 +257,174 @@ const modelDetails = {
     color: "from-red-500 to-red-600",
     shortDescription: "Seu crescimento é impulsionado pelo fundador",
     
-    overview: "No modelo Founder-Led Growth, o fundador é o principal motor de crescimento. Através de sua rede, credibilidade pessoal e presença, ele atrai clientes, parceiros e investidores. Este modelo é comum em startups iniciais e em negócios baseados em expertise pessoal.",
+    overview: "No modelo Founder-Led Growth, o fundador é o principal ativo de crescimento. Sua expertise, rede de contatos e credibilidade pessoal atraem clientes. Este modelo é comum em estágios iniciais e funciona bem para consultoria, serviços e produtos premium.",
     
     howItWorks: [
-      "Fundador usa sua rede pessoal para conseguir clientes",
-      "Constrói credibilidade através de conteúdo e presença",
-      "Faz vendas diretas e relacionamentos pessoais",
-      "Participa de eventos e comunidades",
-      "Cria buzz e atrai atenção da mídia",
+      "Fundador usa rede pessoal para conseguir clientes",
+      "Credibilidade e reputação do fundador atraem oportunidades",
+      "Relacionamentos diretos com clientes chave",
+      "Fundador é a cara da empresa",
+      "Crescimento depende da presença e ação do fundador",
     ],
 
     strengths: [
-      "Crescimento rápido nos primeiros meses",
-      "Relacionamentos geram lealdade",
-      "Fundador tem autonomia total",
-      "Custo inicial baixo",
-      "Feedback direto de clientes",
+      "Rápido para começar (não precisa de equipe grande)",
+      "Custo baixo de aquisição inicial",
+      "Relacionamentos fortes com primeiros clientes",
+      "Flexibilidade para pivotar",
+      "Autenticidade e confiança",
     ],
 
     weaknesses: [
-      "Não escala sem delegar",
-      "Dependência total do fundador",
-      "Difícil contratar sem processos",
-      "Fundador fica sobrecarregado",
-      "Crescimento limita-se à rede do fundador",
+      "Não escala sem o fundador",
+      "Fundador vira gargalo",
+      "Difícil de delegar",
+      "Burnout é comum",
+      "Crescimento limitado pelo tempo do fundador",
     ],
 
     applicationStrategies: [
       {
         title: "Construir Presença Online",
-        description: "LinkedIn, Twitter, YouTube. Compartilhe insights sobre sua indústria. Construa audiência. Audiência = clientes potenciais.",
+        description: "Poste regularmente no LinkedIn, TikTok ou Instagram. Compartilhe aprendizados, bastidores e insights. Seja autêntico e consistente.",
       },
       {
-        title: "Participar de Comunidades",
-        description: "Encontre comunidades onde seu cliente ideal está. Participe ativamente. Ajude pessoas. Relacionamentos viram negócios.",
-      },
-      {
-        title: "Fazer Vendas Diretas",
-        description: "Ligue, envie email, converse. Relacionamento pessoal é poderoso. Você é o melhor vendedor do seu produto.",
+        title: "Usar Rede de Contatos",
+        description: "Fale com conhecidos, ex-colegas e amigos. Peça indicações. Participe de eventos e faça networking ativo.",
       },
       {
         title: "Criar Conteúdo Pessoal",
-        description: "Escreva sobre sua jornada, aprendizados, insights. Conteúdo autêntico atrai pessoas que se identificam com você.",
+        description: "Escreva artigos, faça vídeos ou podcasts. Compartilhe sua expertise. Isso atrai oportunidades e constrói autoridade.",
       },
       {
-        title: "Buscar Parcerias Estratégicas",
-        description: "Encontre pessoas/empresas complementares. Faça parcerias que beneficiam ambos. Crescimento mútuo.",
+        title: "Ser Consultivo",
+        description: "Ajude pessoas gratuitamente. Responda perguntas. Ofereça valor antes de vender. Isso gera confiança e referências.",
+      },
+      {
+        title: "Planejar Transição",
+        description: "Documente processos. Contrate pessoas aos poucos. Delegue tarefas operacionais. Prepare a empresa para crescer sem você.",
       },
     ],
 
     internalActions: [
-      "Definir processo de vendas para replicar",
-      "Documentar playbook de como você vende",
-      "Começar a delegar tarefas operacionais",
-      "Criar sistema de CRM simples",
-      "Treinar primeiro vendedor/operacional",
-      "Medir quais ações geram mais clientes",
+      "Documentar processos e conhecimento",
+      "Contratar primeiros funcionários chave",
+      "Criar sistemas para reduzir dependência do fundador",
+      "Treinar equipe para assumir responsabilidades",
+      "Definir quando e como transicionar para outro modelo",
+      "Manter cultura e valores mesmo com crescimento",
     ],
 
     externalActions: [
-      "Postar conteúdo pessoal 3-4x por semana no LinkedIn",
-      "Fazer 5-10 ligações/contatos por semana",
-      "Participar de 1-2 eventos por mês",
-      "Criar conteúdo em vídeo (YouTube, TikTok)",
-      "Fazer podcast ou entrevistas",
-      "Construir relacionamento com jornalistas e influenciadores",
+      "Postar diariamente no LinkedIn compartilhando aprendizados",
+      "Fazer vídeos curtos no TikTok ou Instagram",
+      "Participar de eventos e conferências",
+      "Fazer networking ativo com potenciais clientes",
+      "Dar palestras e participar de podcasts",
+      "Construir comunidade em torno da sua expertise",
     ],
 
     nextSteps: [
-      "Semana 1-2: Mapear sua rede e identificar 20 prospects",
-      "Semana 3-4: Fazer contato com 10 prospects",
-      "Mês 2: Começar a postar conteúdo regularmente",
-      "Mês 3: Fechar primeiros clientes e documentar processo",
-      "Mês 4+: Começar a delegar e escalar",
+      "Semana 1-2: Definir sua mensagem e posicionamento pessoal",
+      "Semana 3-4: Começar a postar regularmente em redes sociais",
+      "Mês 2: Ativar rede de contatos e pedir indicações",
+      "Mês 3: Documentar processos e começar a contratar",
+      "Mês 4+: Planejar transição para modelo mais escalável",
     ],
   },
 };
 
 export default function ResultDetails() {
-  const [match, params] = useRoute("/resultado/:model");
   const [, setLocation] = useLocation();
+  const [match, params] = useRoute("/resultado/:model");
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const downloadPDF = (model: string) => {
+  const downloadPDF = async (modelKey: string) => {
     setIsDownloading(true);
     try {
-      const details = modelDetails[model as keyof typeof modelDetails];
-      
-      const htmlContent = `
-        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; line-height: 1.6; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; text-align: center; border-radius: 8px; margin-bottom: 30px;">
-            <div style="font-size: 48px; margin-bottom: 15px;">${details.icon}</div>
-            <h1 style="margin: 0; font-size: 32px; font-weight: bold;">${details.name}</h1>
-            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">${details.shortDescription}</p>
-          </div>
+      const details = modelDetails[modelKey as keyof typeof modelDetails];
+      if (!details) {
+        alert("Modelo inválido");
+        return;
+      }
 
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">O Que É?</h2>
-            <p style="text-align: justify;">${details.overview}</p>
-          </div>
+      // Create text content for download
+      const textContent = `
+═══════════════════════════════════════════════════════════════
+  DIAGNÓSTICO DE LED GROWTH
+═══════════════════════════════════════════════════════════════
 
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">Como Funciona</h2>
-            <ol style="margin: 0; padding-left: 20px;">
-              ${details.howItWorks.map(item => `<li style="margin-bottom: 8px;">${item}</li>`).join('')}
-            </ol>
-          </div>
+${details.icon} ${details.name}
+${details.shortDescription}
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-            <div>
-              <h2 style="color: #22c55e; font-size: 20px; border-bottom: 3px solid #22c55e; padding-bottom: 10px; margin-bottom: 15px;">Pontos Fortes</h2>
-              <ul style="margin: 0; padding-left: 20px;">
-                ${details.strengths.map(item => `<li style="margin-bottom: 8px; color: #22c55e;">✓ ${item}</li>`).join('')}
-              </ul>
-            </div>
-            <div>
-              <h2 style="color: #ef4444; font-size: 20px; border-bottom: 3px solid #ef4444; padding-bottom: 10px; margin-bottom: 15px;">Pontos Fracos</h2>
-              <ul style="margin: 0; padding-left: 20px;">
-                ${details.weaknesses.map(item => `<li style="margin-bottom: 8px; color: #ef4444;">✗ ${item}</li>`).join('')}
-              </ul>
-            </div>
-          </div>
+───────────────────────────────────────────────────────────────
+O QUE É?
+───────────────────────────────────────────────────────────────
 
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">O Que Fazer Agora</h2>
-            ${details.applicationStrategies.map(s => `
-              <div style="background: #f0f9ff; border-left: 4px solid #667eea; padding: 15px; margin-bottom: 15px; border-radius: 4px;">
-                <h3 style="margin: 0 0 8px 0; color: #667eea; font-size: 16px;">${s.title}</h3>
-                <p style="margin: 0; font-size: 14px;">${s.description}</p>
-              </div>
-            `).join('')}
-          </div>
+${details.overview}
 
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">Ações Internas</h2>
-            <ul style="margin: 0; padding-left: 20px;">
-              ${details.internalActions.map(action => `<li style="margin-bottom: 8px;">${action}</li>`).join('')}
-            </ul>
-          </div>
+───────────────────────────────────────────────────────────────
+COMO FUNCIONA
+───────────────────────────────────────────────────────────────
 
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">Ações Externas</h2>
-            <ul style="margin: 0; padding-left: 20px;">
-              ${details.externalActions.map(action => `<li style="margin-bottom: 8px;">${action}</li>`).join('')}
-            </ul>
-          </div>
+${details.howItWorks.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}
 
-          <div style="margin-bottom: 30px;">
-            <h2 style="color: #667eea; font-size: 20px; border-bottom: 3px solid #667eea; padding-bottom: 10px; margin-bottom: 15px;">Seu Plano de Ação</h2>
-            <ol style="margin: 0; padding-left: 20px;">
-              ${details.nextSteps.map(step => `<li style="margin-bottom: 12px;">${step}</li>`).join('')}
-            </ol>
-          </div>
+───────────────────────────────────────────────────────────────
+PONTOS FORTES
+───────────────────────────────────────────────────────────────
 
-          <div style="border-top: 2px solid #e5e7eb; padding-top: 20px; text-align: center; color: #999; font-size: 12px;">
-            <p style="margin: 0;">Diagnóstico gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
-            <p style="margin: 5px 0 0 0;">Quiz de Led Growth - Descubra sua estratégia de crescimento predominante</p>
-          </div>
-        </div>
-      `;
+${details.strengths.map(s => `✓ ${s}`).join('\n')}
 
-      const element = document.createElement('div');
-      element.innerHTML = htmlContent;
-      element.style.display = 'none';
-      document.body.appendChild(element);
+───────────────────────────────────────────────────────────────
+PONTOS FRACOS
+───────────────────────────────────────────────────────────────
 
-      const opt: any = {
-        margin: 10,
-        filename: `Diagnostico-${details.name.replace(/\s+/g, '-')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' },
-      };
+${details.weaknesses.map(w => `✗ ${w}`).join('\n')}
 
-      html2pdf().set(opt).from(element).save().then(() => {
-        document.body.removeChild(element);
-      }).catch((error: any) => {
-        console.error('PDF generation error:', error);
-        document.body.removeChild(element);
-      });
+───────────────────────────────────────────────────────────────
+O QUE FAZER AGORA
+───────────────────────────────────────────────────────────────
+
+${details.applicationStrategies.map((s, idx) => `\n${idx + 1}. ${s.title}\n   ${s.description}`).join('\n')}
+
+───────────────────────────────────────────────────────────────
+AÇÕES INTERNAS
+───────────────────────────────────────────────────────────────
+
+${details.internalActions.map(a => `• ${a}`).join('\n')}
+
+───────────────────────────────────────────────────────────────
+AÇÕES EXTERNAS
+───────────────────────────────────────────────────────────────
+
+${details.externalActions.map(a => `• ${a}`).join('\n')}
+
+───────────────────────────────────────────────────────────────
+SEU PLANO DE AÇÃO
+───────────────────────────────────────────────────────────────
+
+${details.nextSteps.map((step, idx) => `${idx + 1}. ${step}`).join('\n')}
+
+═══════════════════════════════════════════════════════════════
+Diagnóstico gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}
+Quiz de Led Growth - Descubra sua estratégia de crescimento predominante
+═══════════════════════════════════════════════════════════════
+      `.trim();
+
+      // Create blob and download
+      const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Diagnostico-${details.name.replace(/\s+/g, '-')}.txt`);
+      link.style.visibility = "hidden";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error('Error generating download:', error);
+      alert('Erro ao gerar download. Por favor, tente novamente.');
     } finally {
       setIsDownloading(false);
     }
@@ -636,7 +621,7 @@ export default function ResultDetails() {
             className="w-full gap-2 bg-green-600 hover:bg-green-700"
           >
             <Download className="w-4 h-4" />
-            {isDownloading ? 'Gerando PDF...' : 'Download Diagnóstico (PDF)'}
+            {isDownloading ? 'Gerando Download...' : 'Download Diagnóstico'}
           </Button>
         </div>
       </div>

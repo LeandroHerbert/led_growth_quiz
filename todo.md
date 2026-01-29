@@ -14,3 +14,7 @@
 - [x] Implementar sistema de notificações em tempo real
 - [x] Testar exportação CSV
 - [x] Testar notificações em tempo real
+
+## Correções
+- [x] Corrigir download do PDF de diagnóstico na página de resultado
+- [x] Testar download do PDF
