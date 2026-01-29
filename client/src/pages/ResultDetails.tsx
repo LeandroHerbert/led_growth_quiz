@@ -1,7 +1,7 @@
 import { useRoute, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, CheckCircle, AlertCircle, Target, TrendingUp, Download, BarChart3 } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertCircle, Target, TrendingUp, Download } from "lucide-react";
 import { useState } from "react";
 
 const modelDetails = {
@@ -341,7 +341,7 @@ export default function ResultDetails() {
   const [, setLocation] = useLocation();
   const [isDownloading, setIsDownloading] = useState(false);
 
-  const generateDownload = (model: string) => {
+  const downloadQRCode = (model: string) => {
     setIsDownloading(true);
     try {
       const details = modelDetails[model as keyof typeof modelDetails];
@@ -458,15 +458,18 @@ Quiz de Led Growth - Descubra sua estratégia de crescimento predominante
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <Button
-          variant="outline"
-          onClick={() => setLocation("/")}
-          className="mb-8 gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Voltar ao Quiz
-        </Button>
+        {/* Header with Logo */}
+        <div className="mb-8">
+          <Button
+            variant="outline"
+            onClick={() => setLocation("/")}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar ao Quiz
+          </Button>
+          <img src="/images/un-logo.png" alt="UN Logo" className="h-12 mt-4" />
+        </div>
 
         {/* Title */}
         <div className="mb-12">
@@ -592,25 +595,18 @@ Quiz de Led Growth - Descubra sua estratégia de crescimento predominante
         </Card>
 
         {/* Footer */}
-        <div className="flex gap-4 justify-center">
+        <div className="flex gap-4 w-full mt-8">
           <Button
-            onClick={() => generateDownload(model)}
+            onClick={() => downloadQRCode(model)}
             disabled={isDownloading}
-            className="gap-2 bg-green-600 hover:bg-green-700"
+            className="flex-1 gap-2 bg-green-600 hover:bg-green-700"
           >
             <Download className="w-4 h-4" />
-            {isDownloading ? 'Gerando...' : 'Download em TXT'}
-          </Button>
-          <Button
-            onClick={() => setLocation("/dashboard")}
-            className="gap-2"
-          >
-            <BarChart3 className="w-4 h-4" />
-            Ver Dashboard
+            {isDownloading ? 'Gerando...' : 'Download Diagnóstico'}
           </Button>
           <Button
             onClick={() => setLocation("/")}
-            className="gap-2"
+            className="flex-1 gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Refazer Quiz

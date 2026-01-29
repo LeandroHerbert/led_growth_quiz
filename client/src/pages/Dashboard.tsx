@@ -85,15 +85,18 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <Button
-          variant="outline"
-          onClick={() => setLocation("/")}
-          className="mb-8 gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Voltar ao Quiz
-        </Button>
+        {/* Header with Logo */}
+        <div className="mb-8">
+          <Button
+            variant="outline"
+            onClick={() => setLocation("/")}
+            className="gap-2 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Voltar ao Quiz
+          </Button>
+          <img src="/images/un-logo.png" alt="UN Logo" className="h-12" />
+        </div>
 
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-white mb-2">Dashboard de Analytics</h1>

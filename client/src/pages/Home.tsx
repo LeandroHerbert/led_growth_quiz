@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -49,90 +49,90 @@ const questions: Question[] = [
     id: 4,
     question: "Qual é seu maior desafio para crescer?",
     answers: [
-      { text: "Encontrar e manter bons vendedores", model: "SLG" },
+      { text: "Encontrar bons vendedores", model: "SLG" },
       { text: "Melhorar a experiência do usuário", model: "PLG" },
-      { text: "Produzir conteúdo e publicidade", model: "MLG" },
-      { text: "Não consigo fazer tudo sozinho", model: "FLG" },
+      { text: "Gerar demanda e leads", model: "MLG" },
+      { text: "Escalar sem perder qualidade", model: "FLG" },
     ],
   },
   {
     id: 5,
-    question: "O que faz um cliente permanecer com você?",
+    question: "O que mais influencia um cliente a comprar de você?",
     answers: [
       { text: "Relacionamento com o vendedor", model: "SLG" },
       { text: "A utilidade do produto na vida do cliente", model: "PLG" },
       { text: "A qualidade do nosso conteúdo", model: "MLG" },
-      { text: "Relacionamento comigo", model: "FLG" },
+      { text: "Minha reputação pessoal", model: "FLG" },
     ],
   },
   {
     id: 6,
-    question: "Onde você investe mais dinheiro?",
+    question: "Como você gasta a maioria do seu tempo?",
     answers: [
-      { text: "Salários e comissões de vendedores", model: "SLG" },
-      { text: "Melhorias no produto", model: "PLG" },
-      { text: "Publicidade, Instagram, Google Ads", model: "MLG" },
-      { text: "Meu tempo e networking", model: "FLG" },
+      { text: "Vendendo e negociando com clientes", model: "SLG" },
+      { text: "Melhorando o produto", model: "PLG" },
+      { text: "Criando conteúdo e fazendo marketing", model: "MLG" },
+      { text: "Construindo relacionamentos e networking", model: "FLG" },
     ],
   },
   {
     id: 7,
-    question: "Se parasse com vendas por um mês, o que acontecia?",
+    question: "Qual é sua principal fonte de novos clientes?",
     answers: [
-      { text: "Praticamente pararia de ganhar clientes", model: "SLG" },
-      { text: "Diminuiria, mas o produto ainda venderia", model: "PLG" },
-      { text: "Diminuiria gradualmente", model: "MLG" },
-      { text: "Seria um desastre para mim", model: "FLG" },
+      { text: "Equipe de vendas", model: "SLG" },
+      { text: "Usuários experimentando versão gratuita", model: "PLG" },
+      { text: "Buscas no Google e redes sociais", model: "MLG" },
+      { text: "Indicações da minha rede", model: "FLG" },
     ],
   },
   {
     id: 8,
-    question: "Como você valida se o produto resolve o problema?",
+    question: "Se você saísse do negócio por 3 meses, o que aconteceria?",
     answers: [
-      { text: "Conversas diretas com clientes", model: "SLG" },
-      { text: "Vendo como as pessoas usam", model: "PLG" },
-      { text: "Feedback nos comentários e redes", model: "MLG" },
-      { text: "Conversas pessoais que tenho", model: "FLG" },
+      { text: "Vendas cairiam drasticamente", model: "SLG" },
+      { text: "Produto continuaria gerando receita", model: "PLG" },
+      { text: "Leads diminuiriam, mas conteúdo ainda atrairia", model: "MLG" },
+      { text: "Crescimento pararia quase completamente", model: "FLG" },
     ],
   },
   {
     id: 9,
-    question: "Qual é sua vantagem competitiva?",
+    question: "Qual é o seu ciclo de vendas típico?",
     answers: [
-      { text: "Equipe de vendas experiente", model: "SLG" },
-      { text: "Produto fácil de usar", model: "PLG" },
-      { text: "Conteúdo e presença online", model: "MLG" },
-      { text: "Minha credibilidade e rede", model: "FLG" },
+      { text: "3+ meses", model: "SLG" },
+      { text: "Dias a 1 semana", model: "PLG" },
+      { text: "2-4 semanas", model: "MLG" },
+      { text: "Varia muito", model: "FLG" },
     ],
   },
   {
     id: 10,
-    question: "Como você pretende escalar nos próximos 2 anos?",
+    question: "Como você se diferencia da concorrência?",
     answers: [
-      { text: "Expandindo a equipe de vendas", model: "SLG" },
-      { text: "Melhorando o produto e adicionando funcionalidades", model: "PLG" },
-      { text: "Aumentando visibilidade online", model: "MLG" },
-      { text: "Construindo minha marca pessoal", model: "FLG" },
+      { text: "Relacionamento e atendimento pessoal", model: "SLG" },
+      { text: "Qualidade e facilidade de uso do produto", model: "PLG" },
+      { text: "Conteúdo educativo e presença online", model: "MLG" },
+      { text: "Minha expertise e credibilidade pessoal", model: "FLG" },
     ],
   },
   {
     id: 11,
-    question: "Se tivesse R$100k para investir, escolheria:",
+    question: "Qual é o seu ticket médio?",
     answers: [
-      { text: "Contratar 2 vendedores bons", model: "SLG" },
-      { text: "Melhorar a experiência do produto", model: "PLG" },
-      { text: "Publicidade e produção de conteúdo", model: "MLG" },
-      { text: "Aumentar minha presença online", model: "FLG" },
+      { text: "Alto (acima de R$10k)", model: "SLG" },
+      { text: "Baixo (até R$500)", model: "PLG" },
+      { text: "Médio (R$500 a R$5k)", model: "MLG" },
+      { text: "Varia bastante", model: "FLG" },
     ],
   },
   {
     id: 12,
-    question: "Qual é o seu maior gargalo agora?",
+    question: "Qual é sua prioridade para os próximos 6 meses?",
     answers: [
-      { text: "Falta de bons vendedores", model: "SLG" },
-      { text: "Produto complexo demais", model: "PLG" },
-      { text: "Orçamento de marketing", model: "MLG" },
-      { text: "Meu tempo pessoal", model: "FLG" },
+      { text: "Contratar e treinar mais vendedores", model: "SLG" },
+      { text: "Melhorar onboarding e retenção", model: "PLG" },
+      { text: "Aumentar tráfego e leads", model: "MLG" },
+      { text: "Expandir minha presença e rede", model: "FLG" },
     ],
   },
 ];
@@ -140,96 +140,84 @@ const questions: Question[] = [
 const modelInfo = {
   SLG: {
     name: "Sales-Led Growth",
-    description: "Seu crescimento é impulsionado pela equipe de vendas.",
-    color: "from-blue-500 to-blue-600",
     icon: "📞",
+    color: "from-blue-500 to-blue-600",
+    description: "Seu crescimento é impulsionado pela equipe de vendas",
   },
   PLG: {
     name: "Product-Led Growth",
-    description: "Seu crescimento é impulsionado pelo produto.",
-    color: "from-purple-500 to-purple-600",
     icon: "🎯",
+    color: "from-purple-500 to-purple-600",
+    description: "Seu crescimento é impulsionado pelo produto",
   },
   MLG: {
     name: "Marketing-Led Growth",
-    description: "Seu crescimento é impulsionado pelo marketing.",
-    color: "from-green-500 to-green-600",
     icon: "📢",
+    color: "from-green-500 to-green-600",
+    description: "Seu crescimento é impulsionado pelo marketing",
   },
   FLG: {
     name: "Founder-Led Growth",
-    description: "Seu crescimento é impulsionado pelo fundador.",
-    color: "from-red-500 to-red-600",
     icon: "⭐",
+    color: "from-red-500 to-red-600",
+    description: "Seu crescimento é impulsionado pelo fundador",
   },
 };
 
-// Track analytics
-const trackAnalytics = (event: string, data: any) => {
-  try {
-    // Send to analytics endpoint if available
-    if (typeof window !== "undefined" && (window as any).umami) {
-      (window as any).umami.track(event, data);
-    }
-    // Also log to console for debugging
-    console.log(`[Analytics] ${event}:`, data);
-  } catch (error) {
-    console.error("Analytics error:", error);
-  }
-};
-
 export default function Home() {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [scores, setScores] = useState<Record<string, number>>({
-    SLG: 0,
-    PLG: 0,
-    MLG: 0,
-    FLG: 0,
-  });
-  const [showResult, setShowResult] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [, setLocation] = useLocation();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [scores, setScores] = useState({ SLG: 0, PLG: 0, MLG: 0, FLG: 0 });
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  // Scroll to top when question changes
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [currentQuestion, showResult]);
+  const trackAnalytics = useCallback((eventName: string, data: any) => {
+    if (typeof window !== "undefined" && (window as any).umami) {
+      (window as any).umami.track(eventName, data);
+    }
+  }, []);
 
-  const handleAnswer = (model: string) => {
-    setSelectedAnswer(model);
-    
-    // Track answer selection
-    trackAnalytics("quiz_answer_selected", {
-      question_id: currentQuestion + 1,
-      question: questions[currentQuestion].question,
-      selected_model: model,
-    });
+  const handleAnswer = useCallback(
+    (model: string) => {
+      if (isProcessing || selectedAnswer) return;
 
-    // Delay to show selection feedback
-    setTimeout(() => {
-      setScores((prev) => ({
-        ...prev,
-        [model]: prev[model] + 1,
-      }));
+      setIsProcessing(true);
+      setSelectedAnswer(model);
 
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedAnswer(null);
-      } else {
-        setShowResult(true);
-        // Track quiz completion
-        trackAnalytics("quiz_completed", {
-          total_questions: questions.length,
-          timestamp: new Date().toISOString(),
-        });
-      }
-    }, 300);
-  };
+      trackAnalytics("quiz_answer_selected", {
+        question_id: currentQuestion + 1,
+        question: questions[currentQuestion].question,
+        selected_model: model,
+      });
 
-  const getPrimaryModel = () => {
+      setTimeout(() => {
+        setScores((prev: any) => ({
+          ...prev,
+          [model]: (prev[model] || 0) + 1,
+        }));
+
+        if (currentQuestion < questions.length - 1) {
+          setCurrentQuestion(currentQuestion + 1);
+          setSelectedAnswer(null);
+          setIsProcessing(false);
+        } else {
+          setShowResult(true);
+          trackAnalytics("quiz_completed", {
+            total_questions: questions.length,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }, 300);
+    },
+    [currentQuestion, isProcessing, selectedAnswer, trackAnalytics]
+  );
+
+  const getPrimaryModel = (): string => {
     let maxScore = 0;
     let primaryModel = "";
-    for (const [model, score] of Object.entries(scores)) {
+    const scoresObj = scores as Record<string, number>;
+    for (const [model, score] of Object.entries(scoresObj)) {
       if (score > maxScore) {
         maxScore = score;
         primaryModel = model;
@@ -243,7 +231,6 @@ export default function Home() {
   if (showResult) {
     const primaryModel = getPrimaryModel();
     const handleViewDetails = () => {
-      // Track result view
       trackAnalytics("quiz_result_viewed", {
         primary_model: primaryModel,
         scores: scores,
@@ -262,7 +249,7 @@ export default function Home() {
               </div>
 
               {/* Primary Model */}
-              <div className={`bg-gradient-to-r ${modelInfo[primaryModel as keyof typeof modelInfo].color} rounded-lg p-8 text-white mb-8 animate-fade-in`}>
+              <div className={`bg-gradient-to-r ${primaryModel ? modelInfo[primaryModel as keyof typeof modelInfo]?.color : ''} rounded-lg p-8 text-white mb-8 animate-fade-in`}>
                 <div className="text-5xl mb-4">{modelInfo[primaryModel as keyof typeof modelInfo].icon}</div>
                 <h2 className="text-3xl font-bold mb-3">{modelInfo[primaryModel as keyof typeof modelInfo].name}</h2>
                 <p className="text-lg opacity-90">{modelInfo[primaryModel as keyof typeof modelInfo].description}</p>
@@ -288,18 +275,18 @@ export default function Home() {
                     transform: translateY(0);
                   }
                 }
-                .pulse-button {
-                  animation: pulse-shadow 2s infinite;
-                }
                 .animate-fade-in {
                   animation: fade-in 0.5s ease-out;
                 }
+                .pulse-button {
+                  animation: pulse-shadow 2s infinite;
+                }
               `}</style>
-              
-              {/* Action */}
+
+              {/* CTA Button */}
               <Button
                 onClick={handleViewDetails}
-                className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg gap-2 pulse-button shadow-lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg font-bold gap-2 pulse-button shadow-lg"
               >
                 Ver Detalhes e Recomendações
                 <ArrowRight className="w-5 h-5" />
@@ -312,67 +299,53 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header with Logo */}
+        <div className="text-center mb-12">
+          <img src="/images/un-logo.png" alt="UN Logo" className="h-16 mx-auto mb-6" />
+          <h1 className="text-5xl font-bold text-white mb-4">
             Qual é seu Modelo de <span className="text-blue-400">Led Growth?</span>
           </h1>
-          <p className="text-gray-300 text-lg">Descubra qual estratégia de crescimento é predominante no seu negócio</p>
+          <p className="text-xl text-gray-300">
+            Descubra qual estratégia de crescimento é predominante no seu negócio
+          </p>
         </div>
 
         {/* Progress */}
-        <div className="mb-8">
+        <Card className="bg-white bg-opacity-10 backdrop-blur-sm border-gray-700 p-6 mb-8">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-sm font-medium text-gray-300">
-              Pergunta {currentQuestion + 1} de {questions.length}
-            </span>
-            <span className="text-sm font-medium text-gray-300">{Math.round(progress)}%</span>
+            <span className="text-gray-300 font-medium">Pergunta {currentQuestion + 1} de {questions.length}</span>
+            <span className="text-gray-300 font-medium">{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
-          <div className="text-xs text-gray-400 mt-2 text-center">
-            {questions.length - currentQuestion - 1} pergunta{questions.length - currentQuestion - 1 !== 1 ? 's' : ''} restante{questions.length - currentQuestion - 1 !== 1 ? 's' : ''}
-          </div>
-        </div>
+          <p className="text-gray-400 text-sm mt-2">{questions.length - currentQuestion - 1} perguntas restantes</p>
+        </Card>
 
         {/* Question Card */}
-        <Card className="bg-white shadow-2xl mb-8 animate-fade-in">
-          <div className="p-8 md:p-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-8">
-              {questions[currentQuestion].question}
-            </h2>
+        <Card className="bg-white p-8 mb-8 animate-fade-in">
+          <h2 className="text-2xl font-bold mb-8 text-gray-900">{questions[currentQuestion].question}</h2>
 
-            {/* Answers */}
-            <div className="space-y-3">
-              {questions[currentQuestion].answers.map((answer, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(answer.model)}
-                  className={`w-full p-4 text-left border-2 rounded-lg transition-all group ${
-                    selectedAnswer === answer.model
-                      ? "border-blue-500 bg-blue-50 scale-95"
-                      : "border-gray-200 hover:border-blue-500 hover:bg-blue-50"
-                  }`}
-                  disabled={selectedAnswer !== null}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className={`font-medium ${
-                      selectedAnswer === answer.model
-                        ? "text-blue-600"
-                        : "text-gray-800 group-hover:text-blue-600"
-                    }`}>
-                      {answer.text}
-                    </span>
-                    <ChevronRight className={`w-5 h-5 transition-colors ${
-                      selectedAnswer === answer.model
-                        ? "text-blue-500"
-                        : "text-gray-400 group-hover:text-blue-500"
-                    }`} />
-                  </div>
-                </button>
-              ))}
-            </div>
+          <div className="space-y-3">
+            {questions[currentQuestion].answers.map((answer, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleAnswer(answer.model)}
+                disabled={isProcessing || selectedAnswer !== null}
+                className={`w-full p-4 text-left rounded-lg border-2 transition-all duration-200 ${
+                  selectedAnswer === answer.model
+                    ? "bg-blue-100 border-blue-500 text-blue-900"
+                    : selectedAnswer
+                    ? "bg-gray-50 border-gray-200 text-gray-600 opacity-50"
+                    : "bg-gray-50 border-gray-200 text-gray-900 hover:border-blue-300 hover:bg-blue-50"
+                } ${isProcessing ? "cursor-not-allowed" : "cursor-pointer"}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{answer.text}</span>
+                  <ChevronRight className="w-5 h-5" />
+                </div>
+              </button>
+            ))}
           </div>
         </Card>
 
@@ -388,22 +361,6 @@ export default function Home() {
           </Button>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
