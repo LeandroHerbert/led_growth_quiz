@@ -40,22 +40,22 @@ const questions: Question[] = [
   },
   {
     id: 3,
-    question: "Quanto tempo leva para alguém virar cliente?",
+    question: "Quanto tempo leva, em média, para alguém se tornar cliente?",
     answers: [
-      { text: "Meses", model: "SLG" },
-      { text: "Dias ou semanas", model: "PLG" },
-      { text: "Semanas", model: "MLG" },
-      { text: "Varia bastante", model: "FLG" },
+      { text: "Vários meses", model: "SLG" },
+      { text: "Dias ou até uma semana", model: "PLG" },
+      { text: "Algumas semanas", model: "MLG" },
+      { text: "Varia muito, depende do contexto", model: "FLG" },
     ],
   },
   {
     id: 4,
-    question: "Qual é seu maior desafio para crescer?",
+    question: "Qual é o seu maior desafio atual para crescer?",
     answers: [
-      { text: "Encontrar bons vendedores", model: "SLG" },
-      { text: "Melhorar a experiência do usuário", model: "PLG" },
-      { text: "Gerar demanda e leads", model: "MLG" },
-      { text: "Escalar sem perder qualidade", model: "FLG" },
+      { text: "Contratar e reter bons vendedores", model: "SLG" },
+      { text: "Melhorar a experiência e ativação do usuário no produto", model: "PLG" },
+      { text: "Gerar mais demanda e atrair leads qualificados", model: "MLG" },
+      { text: "Escalar sem que tudo dependa de mim", model: "FLG" },
     ],
   },
   {
@@ -90,42 +90,42 @@ const questions: Question[] = [
   },
   {
     id: 8,
-    question: "Se você saísse do negócio por 3 meses, o que aconteceria?",
+    question: "Se você se afastasse do negócio por 3 meses, o que aconteceria?",
     answers: [
-      { text: "Vendas cairiam drasticamente", model: "SLG" },
-      { text: "Produto continuaria gerando receita", model: "PLG" },
-      { text: "Leads diminuiriam, mas conteúdo ainda atrairia", model: "MLG" },
-      { text: "Crescimento pararia quase completamente", model: "FLG" },
+      { text: "As vendas cairiam muito sem a equipe comercial ativa", model: "SLG" },
+      { text: "O produto continuaria funcionando e gerando receita", model: "PLG" },
+      { text: "Os leads cairiam, mas o conteúdo publicado ainda atrairia visitas", model: "MLG" },
+      { text: "O crescimento pararia, pois depende da minha presença", model: "FLG" },
     ],
   },
   {
     id: 9,
     question: "Como você se diferencia da concorrência?",
     answers: [
-      { text: "Relacionamento e atendimento pessoal", model: "SLG" },
-      { text: "Qualidade e facilidade de uso do produto", model: "PLG" },
-      { text: "Conteúdo educativo e presença online", model: "MLG" },
-      { text: "Minha expertise e credibilidade pessoal", model: "FLG" },
+      { text: "Pelo relacionamento próximo e atendimento personalizado", model: "SLG" },
+      { text: "Pela qualidade, facilidade de uso e experiência do produto", model: "PLG" },
+      { text: "Pela autoridade, conteúdo e presença digital", model: "MLG" },
+      { text: "Pela minha expertise, história e credibilidade pessoal", model: "FLG" },
     ],
   },
   {
     id: 10,
-    question: "Qual é o seu ticket médio?",
+    question: "Qual é o seu ticket médio por cliente?",
     answers: [
-      { text: "Alto (acima de R$10k)", model: "SLG" },
-      { text: "Baixo (até R$500)", model: "PLG" },
-      { text: "Médio (R$500 a R$5k)", model: "MLG" },
-      { text: "Varia bastante", model: "FLG" },
+      { text: "Alto — acima de R$10.000", model: "SLG" },
+      { text: "Baixo — até R$500", model: "PLG" },
+      { text: "Médio — entre R$500 e R$10.000", model: "MLG" },
+      { text: "Varia muito conforme o projeto ou cliente", model: "FLG" },
     ],
   },
   {
     id: 11,
-    question: "Qual é sua prioridade para os próximos 6 meses?",
+    question: "Qual é sua principal prioridade para os próximos 6 meses?",
     answers: [
-      { text: "Contratar e treinar mais vendedores", model: "SLG" },
-      { text: "Melhorar onboarding e retenção", model: "PLG" },
-      { text: "Aumentar tráfego e leads", model: "MLG" },
-      { text: "Expandir minha presença e rede", model: "FLG" },
+      { text: "Estruturar e expandir minha equipe comercial", model: "SLG" },
+      { text: "Melhorar a experiência do usuário e aumentar retenção", model: "PLG" },
+      { text: "Aumentar tráfego orgânico e gerar mais leads", model: "MLG" },
+      { text: "Ampliar minha rede e fortalecer minha presença pessoal", model: "FLG" },
     ],
   },
 ];
@@ -329,14 +329,13 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* Header with Logo */}
+        {/* Header */}
         <div className="text-center mb-12">
-          <img src="/images/un-logo.png" alt="UN Logo" className="h-16 mx-auto mb-6" />
           <h1 className="text-5xl font-bold text-white mb-4">
             <span className="text-blue-400">LED GROWTH MODELS</span>
           </h1>
           <p className="text-xl text-gray-300">
-            Descubra qual estratégia de crescimento é predominante no seu negócio
+            Descubra o Modelo Ideal de Crescimento para seu negócio
           </p>
         </div>
 

@@ -23,3 +23,9 @@
 - [x] Alterar título para "LED GROWTH MODELS"
 - [x] Alterar pergunta 6 para "Como você investe a maior parte do seu tempo"
 - [x] Remover pergunta 9 redundante (ciclo de vendas) - agora são 11 perguntas
+
+## Otimizações de Texto e Visual
+- [ ] Remover logo da UN
+- [ ] Alterar subtítulo do quiz
+- [ ] Revisar textos de todas as perguntas e opções
+- [ ] Revisar textos dos diagnósticos na página de resultado
