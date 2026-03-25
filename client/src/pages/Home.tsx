@@ -70,7 +70,7 @@ const questions: Question[] = [
   },
   {
     id: 6,
-    question: "Como você investe a maior parte do seu tempo?",
+    question: "No âmbito profissional, como você investe a maior parte do seu tempo?",
     answers: [
       { text: "Vendendo e negociando com clientes", model: "SLG" },
       { text: "Melhorando o produto", model: "PLG" },
