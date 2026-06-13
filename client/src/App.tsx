@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import ResultDetails from "./pages/ResultDetails";
 import Dashboard from "./pages/Dashboard";
 import QRCodePage from "./pages/QRCodePage";
+import Evento from "./pages/Evento";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -17,6 +18,7 @@ function Router() {
       <Route path={"/resultado/:model"} component={ResultDetails} />
       <Route path={"/dashboard"} component={Dashboard} />
       <Route path={"/qrcode"} component={QRCodePage} />
+      <Route path={"/evento"} component={Evento} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
