@@ -115,11 +115,8 @@ export const appRouter = router({
         return { success: true, id: lead.id };
       }),
 
-    /** Lista todos os leads — apenas para o owner autenticado */
-    listar: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito" });
-      }
+    /** Lista todos os leads — acesso público via link direto */
+    listar: publicProcedure.query(async () => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
       const leads = await db
@@ -130,15 +127,12 @@ export const appRouter = router({
     }),
 
     /** Atualiza o status (pipeline) de um lead */
-    atualizarStatus: protectedProcedure
+    atualizarStatus: publicProcedure
       .input(z.object({
         id: z.number(),
         status: leadStatusEnum,
       }))
-      .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito" });
-        }
+      .mutation(async ({ input }) => {
         const db = await getDb();
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
         await db
@@ -149,15 +143,12 @@ export const appRouter = router({
       }),
 
     /** Salva anotações sobre um lead */
-    salvarNotas: protectedProcedure
+    salvarNotas: publicProcedure
       .input(z.object({
         id: z.number(),
         notas: z.string(),
       }))
-      .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito" });
-        }
+      .mutation(async ({ input }) => {
         const db = await getDb();
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
         await db
@@ -168,12 +159,9 @@ export const appRouter = router({
       }),
 
     /** Remove um lead */
-    remover: protectedProcedure
+    remover: publicProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") {
-          throw new TRPCError({ code: "FORBIDDEN", message: "Acesso restrito" });
-        }
+      .mutation(async ({ input }) => {
         const db = await getDb();
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
         await db.delete(eventoLeads).where(eq(eventoLeads.id, input.id));

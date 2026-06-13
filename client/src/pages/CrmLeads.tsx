@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import {
   MessageCircle, ChevronDown, Trash2, StickyNote,
   Users, TrendingUp, Calendar, Search, X, Check
@@ -126,15 +124,12 @@ function NotasEditor({ leadId, notasIniciais, onSaved }: {
 }
 
 export default function CrmLeads() {
-  const { user, loading, isAuthenticated } = useAuth();
   const [busca, setBusca] = useState("");
   const [filtroStatus, setFiltroStatus] = useState<LeadStatus | "todos">("todos");
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
 
   const utils = trpc.useUtils();
-  const { data: leads = [], isLoading } = trpc.leads.listar.useQuery(undefined, {
-    enabled: isAuthenticated && user?.role === "admin",
-  });
+  const { data: leads = [], isLoading } = trpc.leads.listar.useQuery();
 
   const atualizarStatus = trpc.leads.atualizarStatus.useMutation({
     onSuccess: () => utils.leads.listar.invalidate(),
@@ -143,32 +138,6 @@ export default function CrmLeads() {
   const remover = trpc.leads.remover.useMutation({
     onSuccess: () => { setConfirmDelete(null); utils.leads.listar.invalidate(); },
   });
-
-  // ── Proteção de acesso ──
-  if (loading) {
-    return (
-      <div style={{ background: "#0a0a0a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "#666", fontFamily: "Inter, sans-serif" }}>Carregando...</p>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <div style={{ background: "#0a0a0a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "16px", fontFamily: "Inter, sans-serif" }}>
-        <p style={{ color: "#fff", fontSize: "18px" }}>Acesso restrito</p>
-        <a href={getLoginUrl()} style={{ color: "#39ff14", fontSize: "14px" }}>Fazer login</a>
-      </div>
-    );
-  }
-
-  if (user?.role !== "admin") {
-    return (
-      <div style={{ background: "#0a0a0a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Inter, sans-serif" }}>
-        <p style={{ color: "#f87171", fontSize: "16px" }}>Você não tem permissão para acessar esta área.</p>
-      </div>
-    );
-  }
 
   // ── Filtros ──
   const leadsFiltrados = leads.filter((l) => {
