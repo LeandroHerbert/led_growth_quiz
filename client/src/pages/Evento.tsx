@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Calendar, Clock, MapPin, Users, CheckCircle, ArrowRight } from "lucide-react";
+import { InscricaoModal } from "@/components/InscricaoModal";
 
 // ============================================================
 // CONFIGURAÇÃO DO EVENTO — altere apenas esta seção a cada semana
@@ -45,11 +46,13 @@ function RevealSection({ children, delay = 0 }: { children: React.ReactNode; del
 }
 
 export default function Evento() {
+  const [modalAberto, setModalAberto] = useState(false);
+
   const handleCadastro = () => {
     if (EVENTO.linkCadastro && EVENTO.linkCadastro !== "#cadastro") {
       window.open(EVENTO.linkCadastro, "_blank");
     } else {
-      document.getElementById("cta-section")?.scrollIntoView({ behavior: "smooth" });
+      setModalAberto(true);
     }
   };
 
@@ -416,6 +419,13 @@ export default function Evento() {
           LED GROWTH MODELS · Evento presencial em Brasília
         </p>
       </footer>
+
+      {/* ── MODAL DE INSCRIÇÃO ── */}
+      <InscricaoModal
+        isOpen={modalAberto}
+        onClose={() => setModalAberto(false)}
+        eventoData={`${EVENTO.dia}/${EVENTO.mesExtenso}/${new Date().getFullYear()}`}
+      />
     </div>
   );
 }

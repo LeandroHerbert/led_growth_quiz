@@ -52,3 +52,37 @@ export const quizCompletions = mysqlTable("quiz_completions", {
 
 export type QuizCompletion = typeof quizCompletions.$inferSelect;
 export type InsertQuizCompletion = typeof quizCompletions.$inferInsert;
+
+/**
+ * Leads do evento LED GROWTH MODELS
+ * Capturados via formulário de inscrição na landing page
+ */
+export const eventoLeads = mysqlTable("evento_leads", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  whatsapp: varchar("whatsapp", { length: 20 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  /** Pipeline CRM */
+  status: mysqlEnum("status", [
+    "lead",
+    "1a_mensagem",
+    "2a_mensagem",
+    "3a_mensagem",
+    "participou",
+    "nao_participou",
+    "marcou_reuniao",
+    "comprou",
+    "nao_comprou",
+  ]).default("lead").notNull(),
+  /** Anotações internas sobre o lead */
+  notas: text("notas"),
+  /** Evento ao qual o lead se inscreveu */
+  eventoData: varchar("evento_data", { length: 50 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type EventoLead = typeof eventoLeads.$inferSelect;
+export type InsertEventoLead = typeof eventoLeads.$inferInsert;
+
+export type LeadStatus = EventoLead["status"];
