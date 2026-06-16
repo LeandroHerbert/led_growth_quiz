@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo } from "react";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -157,15 +156,226 @@ const modelInfo = {
   },
 };
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function formatWhatsApp(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+// ── Tela de captação de lead ─────────────────────────────────────────────────
+
+interface LeadFormProps {
+  onConcluido: () => void;
+}
+
+function LeadForm({ onConcluido }: LeadFormProps) {
+  const [nome, setNome] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [email, setEmail] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const inscrever = trpc.leads.inscrever.useMutation({
+    onSuccess: () => onConcluido(),
+    onError: (err) => {
+      setErrors({ geral: err.message || "Erro ao salvar. Tente novamente." });
+    },
+  });
+
+  const validate = () => {
+    const errs: Record<string, string> = {};
+    if (!nome.trim() || nome.trim().length < 2) errs.nome = "Informe seu nome completo";
+    const digits = whatsapp.replace(/\D/g, "");
+    if (digits.length < 10) errs.whatsapp = "Informe um WhatsApp válido com DDD";
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      errs.email = "Informe um e-mail válido";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    inscrever.mutate({
+      nome: nome.trim(),
+      whatsapp: whatsapp.replace(/\D/g, ""),
+      email: email.trim().toLowerCase(),
+      eventoData: "quiz",
+    });
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    borderRadius: "8px",
+    padding: "12px 16px",
+    color: "#fff",
+    fontSize: "15px",
+    outline: "none",
+    fontFamily: "inherit",
+    boxSizing: "border-box",
+    transition: "border-color 0.2s",
+  };
+
+  const errorStyle: React.CSSProperties = {
+    color: "#f87171",
+    fontSize: "12px",
+    marginTop: "4px",
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{ background: "linear-gradient(135deg, #0a0a0a 0%, #0f1a0f 50%, #0a0a0a 100%)" }}>
+
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .lead-card { animation: fadeUp 0.5s ease-out both; }
+        .lead-input:focus { border-color: #39ff14 !important; }
+        @keyframes pulse-glow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(57,255,20,0.4); }
+          50%       { box-shadow: 0 0 0 10px rgba(57,255,20,0); }
+        }
+        .btn-pulse { animation: pulse-glow 2.2s infinite; }
+      `}</style>
+
+      <div className="lead-card w-full max-w-md">
+
+        {/* Logo / título */}
+        <div style={{ textAlign: "center", marginBottom: "32px" }}>
+          <p style={{ color: "#39ff14", fontSize: "11px", fontWeight: 700, letterSpacing: "3px", textTransform: "uppercase", marginBottom: "12px" }}>
+            Diagnóstico Estratégico
+          </p>
+          <h1 style={{ color: "#fff", fontSize: "clamp(28px, 6vw, 38px)", fontWeight: 900, lineHeight: 1.1, margin: "0 0 12px" }}>
+            LED GROWTH<br />
+            <span style={{ color: "#39ff14" }}>MODELS</span>
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.65)", fontSize: "15px", lineHeight: 1.6, margin: 0 }}>
+            Descubra qual é o motor real de crescimento do seu negócio — em menos de 3 minutos.
+          </p>
+        </div>
+
+        {/* Card do formulário */}
+        <div style={{
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "16px",
+          padding: "32px",
+        }}>
+          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "13px", marginBottom: "24px", textAlign: "center" }}>
+            Preencha os dados abaixo para acessar o diagnóstico
+          </p>
+
+          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+            {/* Nome */}
+            <div>
+              <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px", fontWeight: 600, display: "block", marginBottom: "6px" }}>
+                Nome completo
+              </label>
+              <input
+                className="lead-input"
+                style={{ ...inputStyle, borderColor: errors.nome ? "#f87171" : "rgba(255,255,255,0.15)" }}
+                type="text"
+                placeholder="Seu nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                autoComplete="name"
+              />
+              {errors.nome && <p style={errorStyle}>{errors.nome}</p>}
+            </div>
+
+            {/* WhatsApp */}
+            <div>
+              <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px", fontWeight: 600, display: "block", marginBottom: "6px" }}>
+                WhatsApp (com DDD)
+              </label>
+              <input
+                className="lead-input"
+                style={{ ...inputStyle, borderColor: errors.whatsapp ? "#f87171" : "rgba(255,255,255,0.15)" }}
+                type="tel"
+                placeholder="(61) 99999-9999"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(formatWhatsApp(e.target.value))}
+                autoComplete="tel"
+              />
+              {errors.whatsapp && <p style={errorStyle}>{errors.whatsapp}</p>}
+            </div>
+
+            {/* E-mail */}
+            <div>
+              <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "13px", fontWeight: 600, display: "block", marginBottom: "6px" }}>
+                E-mail
+              </label>
+              <input
+                className="lead-input"
+                style={{ ...inputStyle, borderColor: errors.email ? "#f87171" : "rgba(255,255,255,0.15)" }}
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+              />
+              {errors.email && <p style={errorStyle}>{errors.email}</p>}
+            </div>
+
+            {errors.geral && (
+              <p style={{ ...errorStyle, textAlign: "center", marginTop: 0 }}>{errors.geral}</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={inscrever.isPending}
+              className="btn-pulse"
+              style={{
+                marginTop: "8px",
+                background: inscrever.isPending ? "#1a3a0a" : "#39ff14",
+                color: "#0a0a0a",
+                border: "none",
+                borderRadius: "8px",
+                padding: "14px 24px",
+                fontSize: "15px",
+                fontWeight: 800,
+                cursor: inscrever.isPending ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                width: "100%",
+                letterSpacing: "0.5px",
+                transition: "background 0.2s",
+              }}
+            >
+              {inscrever.isPending ? "Salvando..." : (
+                <>Iniciar diagnóstico <ArrowRight size={16} /></>
+              )}
+            </button>
+          </form>
+        </div>
+
+        <p style={{ color: "rgba(255,255,255,0.25)", fontSize: "11px", textAlign: "center", marginTop: "16px" }}>
+          Seus dados são usados apenas para envio do resultado e não serão compartilhados.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Componente principal ─────────────────────────────────────────────────────
+
 export default function Home() {
   const [, setLocation] = useLocation();
+  const [etapa, setEtapa] = useState<"lead" | "quiz" | "resultado">("lead");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [scores, setScores] = useState({ SLG: 0, PLG: 0, MLG: 0, FLG: 0 });
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [showResult, setShowResult] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Generate session ID once per quiz session
   const sessionId = useMemo(() => nanoid(), []);
 
   const saveResponseMutation = trpc.quiz.saveResponse.useMutation();
@@ -184,7 +394,6 @@ export default function Home() {
       setIsProcessing(true);
       setSelectedAnswer(model);
 
-      // Save response to backend
       saveResponseMutation.mutate({
         sessionId,
         questionId: currentQuestion + 1,
@@ -212,8 +421,7 @@ export default function Home() {
             ...scores,
             [model]: (scores[model as keyof typeof scores] || 0) + 1,
           };
-          
-          // Get primary model
+
           let maxScore = 0;
           let primaryModel = "";
           for (const [m, score] of Object.entries(newScores)) {
@@ -223,14 +431,13 @@ export default function Home() {
             }
           }
 
-          // Save completion to backend
           saveCompletionMutation.mutate({
             sessionId,
             primaryModel,
             scores: newScores,
           });
 
-          setShowResult(true);
+          setEtapa("resultado");
           trackAnalytics("quiz_completed", {
             total_questions: questions.length,
             timestamp: new Date().toISOString(),
@@ -254,9 +461,13 @@ export default function Home() {
     return primaryModel;
   };
 
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  // ── Etapa 1: Captação de lead ──────────────────────────────────────────────
+  if (etapa === "lead") {
+    return <LeadForm onConcluido={() => setEtapa("quiz")} />;
+  }
 
-  if (showResult) {
+  // ── Etapa 3: Resultado ─────────────────────────────────────────────────────
+  if (etapa === "resultado") {
     const primaryModel = getPrimaryModel();
     const handleViewDetails = () => {
       trackAnalytics("quiz_result_viewed", {
@@ -268,6 +479,18 @@ export default function Home() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center p-4">
+        <style>{`
+          @keyframes pulse-shadow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            50%       { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+          }
+          @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fade-in { animation: fade-in 0.5s ease-out; }
+          .pulse-button { animation: pulse-shadow 2s infinite; }
+        `}</style>
         <div className="w-full max-w-2xl">
           <Card className="bg-white shadow-2xl">
             <div className="p-8 md:p-12">
@@ -275,43 +498,11 @@ export default function Home() {
                 <h1 className="text-4xl font-bold mb-2">Seu Diagnóstico</h1>
                 <p className="text-gray-600">Modelo de Led Growth Predominante</p>
               </div>
-
-              {/* Primary Model */}
               <div className={`bg-gradient-to-r ${primaryModel ? modelInfo[primaryModel as keyof typeof modelInfo]?.color : ''} rounded-lg p-8 text-white mb-8 animate-fade-in`}>
                 <div className="text-5xl mb-4">{modelInfo[primaryModel as keyof typeof modelInfo].icon}</div>
                 <h2 className="text-3xl font-bold mb-3">{modelInfo[primaryModel as keyof typeof modelInfo].name}</h2>
                 <p className="text-lg opacity-90">{modelInfo[primaryModel as keyof typeof modelInfo].description}</p>
               </div>
-
-              {/* Pulse Animation */}
-              <style>{`
-                @keyframes pulse-shadow {
-                  0%, 100% {
-                    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-                  }
-                  50% {
-                    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-                  }
-                }
-                @keyframes fade-in {
-                  from {
-                    opacity: 0;
-                    transform: translateY(10px);
-                  }
-                  to {
-                    opacity: 1;
-                    transform: translateY(0);
-                  }
-                }
-                .animate-fade-in {
-                  animation: fade-in 0.5s ease-out;
-                }
-                .pulse-button {
-                  animation: pulse-shadow 2s infinite;
-                }
-              `}</style>
-
-              {/* CTA Button */}
               <Button
                 onClick={handleViewDetails}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 text-lg font-bold gap-2 pulse-button shadow-lg"
@@ -326,10 +517,19 @@ export default function Home() {
     );
   }
 
+  // ── Etapa 2: Quiz ──────────────────────────────────────────────────────────
+  const progress = ((currentQuestion + 1) / questions.length) * 100;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 py-12 px-4">
+      <style>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fade-in 0.5s ease-out; }
+      `}</style>
       <div className="max-w-2xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-white mb-4">
             <span className="text-blue-400">LED GROWTH MODELS</span>
@@ -339,7 +539,6 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Progress */}
         <Card className="bg-white bg-opacity-10 backdrop-blur-sm border-gray-700 p-6 mb-8">
           <div className="flex justify-between items-center mb-3">
             <span className="text-gray-300 font-medium">Pergunta {currentQuestion + 1} de {questions.length}</span>
@@ -349,10 +548,8 @@ export default function Home() {
           <p className="text-gray-400 text-sm mt-2">{questions.length - currentQuestion - 1} perguntas restantes</p>
         </Card>
 
-        {/* Question Card */}
         <Card className="bg-white p-8 mb-8 animate-fade-in">
           <h2 className="text-2xl font-bold mb-8 text-gray-900">{questions[currentQuestion].question}</h2>
-
           <div className="space-y-3">
             {questions[currentQuestion].answers.map((answer, idx) => (
               <button
@@ -376,7 +573,6 @@ export default function Home() {
           </div>
         </Card>
 
-        {/* Footer */}
         <div className="mt-12 flex flex-col items-center gap-4">
           <p className="text-gray-400 text-sm">Responda todas as perguntas para obter seu diagnóstico personalizado</p>
         </div>
