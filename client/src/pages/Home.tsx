@@ -169,15 +169,16 @@ function formatWhatsApp(value: string): string {
 
 interface LeadFormProps {
   onConcluido: () => void;
+  sessionId: string;
 }
 
-function LeadForm({ onConcluido }: LeadFormProps) {
+function LeadForm({ onConcluido, sessionId }: LeadFormProps) {
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const inscrever = trpc.leads.inscrever.useMutation({
+  const salvarLead = trpc.quizLeads.salvar.useMutation({
     onSuccess: () => onConcluido(),
     onError: (err) => {
       setErrors({ geral: err.message || "Erro ao salvar. Tente novamente." });
@@ -198,11 +199,11 @@ function LeadForm({ onConcluido }: LeadFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    inscrever.mutate({
+    salvarLead.mutate({
+      sessionId,
       nome: nome.trim(),
       whatsapp: whatsapp.replace(/\D/g, ""),
       email: email.trim().toLowerCase(),
-      eventoData: "quiz",
     });
   };
 
@@ -330,18 +331,18 @@ function LeadForm({ onConcluido }: LeadFormProps) {
 
             <button
               type="submit"
-              disabled={inscrever.isPending}
+              disabled={salvarLead.isPending}
               className="btn-pulse"
               style={{
                 marginTop: "8px",
-                background: inscrever.isPending ? "#1a3a0a" : "#39ff14",
+                background: salvarLead.isPending ? "#1a3a0a" : "#39ff14",
                 color: "#0a0a0a",
                 border: "none",
                 borderRadius: "8px",
                 padding: "14px 24px",
                 fontSize: "15px",
                 fontWeight: 800,
-                cursor: inscrever.isPending ? "not-allowed" : "pointer",
+                cursor: salvarLead.isPending ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -351,7 +352,7 @@ function LeadForm({ onConcluido }: LeadFormProps) {
                 transition: "background 0.2s",
               }}
             >
-              {inscrever.isPending ? "Salvando..." : (
+              {salvarLead.isPending ? "Salvando..." : (
                 <>Iniciar diagnóstico <ArrowRight size={16} /></>
               )}
             </button>
@@ -463,7 +464,7 @@ export default function Home() {
 
   // ── Etapa 1: Captação de lead ──────────────────────────────────────────────
   if (etapa === "lead") {
-    return <LeadForm onConcluido={() => setEtapa("quiz")} />;
+    return <LeadForm onConcluido={() => setEtapa("quiz")} sessionId={sessionId} />;
   }
 
   // ── Etapa 3: Resultado ─────────────────────────────────────────────────────

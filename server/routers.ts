@@ -6,7 +6,7 @@ import { z } from "zod";
 import { saveQuizResponse, saveQuizCompletion, getQuizAnalytics, getDetailedQuizData } from "./quizDb";
 import { notifyOwner } from "./_core/notification";
 import { getDb } from "./db";
-import { eventoLeads } from "../drizzle/schema";
+import { eventoLeads, quizLeads } from "../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
@@ -18,6 +18,15 @@ const leadStatusEnum = z.enum([
   "participou",
   "nao_participou",
   "marcou_reuniao",
+  "comprou",
+  "nao_comprou",
+]);
+
+const quizCrmStatusEnum = z.enum([
+  "novo",
+  "em_contato",
+  "sessao_marcada",
+  "sessao_realizada",
   "comprou",
   "nao_comprou",
 ]);
@@ -44,6 +53,7 @@ export const appRouter = router({
         await saveQuizResponse(input);
         return { success: true };
       }),
+
     saveCompletion: publicProcedure
       .input(z.object({
         sessionId: z.string(),
@@ -56,6 +66,18 @@ export const appRouter = router({
           primaryModel: input.primaryModel,
           scores: JSON.stringify(input.scores),
         });
+
+        // Atualiza o resultado no quiz_leads se o lead já foi salvo
+        try {
+          const db = await getDb();
+          if (db) {
+            await db
+              .update(quizLeads)
+              .set({ resultadoModelo: input.primaryModel })
+              .where(eq(quizLeads.sessionId, input.sessionId));
+          }
+        } catch (_) {}
+
         const modelNames: Record<string, string> = {
           SLG: "Sales-Led Growth",
           PLG: "Product-Led Growth",
@@ -72,17 +94,106 @@ export const appRouter = router({
         }
         return { success: true };
       }),
+
     getAnalytics: publicProcedure.query(async () => {
       return await getQuizAnalytics();
     }),
+
     getDetailedData: publicProcedure.query(async () => {
       return await getDetailedQuizData();
     }),
   }),
 
-  // ── LEADS DO EVENTO ──────────────────────────────────────────
+  // ── LEADS DO QUIZ (CRM) ──────────────────────────────────────────────────
+  quizLeads: router({
+    /** Salva o lead antes de iniciar o quiz */
+    salvar: publicProcedure
+      .input(z.object({
+        sessionId: z.string(),
+        nome: z.string().min(2),
+        whatsapp: z.string().min(8),
+        email: z.string().email(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
+
+        const whatsappLimpo = input.whatsapp.replace(/\D/g, "");
+
+        await db.insert(quizLeads).values({
+          sessionId: input.sessionId,
+          nome: input.nome.trim(),
+          whatsapp: whatsappLimpo,
+          email: input.email.trim().toLowerCase(),
+          crmStatus: "novo",
+        });
+
+        try {
+          await notifyOwner({
+            title: "Novo lead no Quiz! 📋",
+            content: `${input.nome} iniciou o diagnóstico LED GROWTH MODELS.\n\nWhatsApp: ${whatsappLimpo}\nE-mail: ${input.email}`,
+          });
+        } catch (_) {}
+
+        return { success: true };
+      }),
+
+    /** Lista todos os leads do quiz com resultado */
+    listar: publicProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
+      return await db
+        .select()
+        .from(quizLeads)
+        .orderBy(desc(quizLeads.createdAt));
+    }),
+
+    /** Atualiza o status CRM */
+    atualizarStatus: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        crmStatus: quizCrmStatusEnum,
+        dataSessao: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
+        await db
+          .update(quizLeads)
+          .set({
+            crmStatus: input.crmStatus,
+            ...(input.dataSessao !== undefined ? { dataSessao: input.dataSessao } : {}),
+          })
+          .where(eq(quizLeads.id, input.id));
+        return { success: true };
+      }),
+
+    /** Salva anotações */
+    salvarNotas: publicProcedure
+      .input(z.object({ id: z.number(), notas: z.string() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
+        await db
+          .update(quizLeads)
+          .set({ notas: input.notas })
+          .where(eq(quizLeads.id, input.id));
+        return { success: true };
+      }),
+
+    /** Remove um lead */
+    remover: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
+        await db.delete(quizLeads).where(eq(quizLeads.id, input.id));
+        return { success: true };
+      }),
+  }),
+
+  // ── LEADS DO EVENTO ──────────────────────────────────────────────────────
   leads: router({
-    /** Inscrição pública — qualquer visitante pode se cadastrar */
     inscrever: publicProcedure
       .input(z.object({
         nome: z.string().min(2, "Nome obrigatório"),
@@ -91,9 +202,7 @@ export const appRouter = router({
         eventoData: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        // Formata o WhatsApp: remove tudo que não for dígito
         const whatsappLimpo = input.whatsapp.replace(/\D/g, "");
-
         const db = await getDb();
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
 
@@ -115,50 +224,30 @@ export const appRouter = router({
         return { success: true, id: lead.id };
       }),
 
-    /** Lista todos os leads — acesso público via link direto */
     listar: publicProcedure.query(async () => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
-      const leads = await db
-        .select()
-        .from(eventoLeads)
-        .orderBy(desc(eventoLeads.createdAt));
-      return leads;
+      return await db.select().from(eventoLeads).orderBy(desc(eventoLeads.createdAt));
     }),
 
-    /** Atualiza o status (pipeline) de um lead */
     atualizarStatus: publicProcedure
-      .input(z.object({
-        id: z.number(),
-        status: leadStatusEnum,
-      }))
+      .input(z.object({ id: z.number(), status: leadStatusEnum }))
       .mutation(async ({ input }) => {
         const db = await getDb();
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
-        await db
-          .update(eventoLeads)
-          .set({ status: input.status })
-          .where(eq(eventoLeads.id, input.id));
+        await db.update(eventoLeads).set({ status: input.status }).where(eq(eventoLeads.id, input.id));
         return { success: true };
       }),
 
-    /** Salva anotações sobre um lead */
     salvarNotas: publicProcedure
-      .input(z.object({
-        id: z.number(),
-        notas: z.string(),
-      }))
+      .input(z.object({ id: z.number(), notas: z.string() }))
       .mutation(async ({ input }) => {
         const db = await getDb();
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
-        await db
-          .update(eventoLeads)
-          .set({ notas: input.notas })
-          .where(eq(eventoLeads.id, input.id));
+        await db.update(eventoLeads).set({ notas: input.notas }).where(eq(eventoLeads.id, input.id));
         return { success: true };
       }),
 
-    /** Remove um lead */
     remover: publicProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
