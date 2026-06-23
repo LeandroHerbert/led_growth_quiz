@@ -4,10 +4,10 @@ import { useState, useRef } from "react";
 
 // URLs dos PDFs hospedados como assets estáticos
 const PDF_URLS: Record<string, string> = {
-  SLG: "/manus-storage/diagnostico-slg_b3b8d3fd.pdf",
-  PLG: "/manus-storage/diagnostico-plg_9073ca46.pdf",
-  MLG: "/manus-storage/diagnostico-mlg_67ca6500.pdf",
-  FLG: "/manus-storage/diagnostico-flg_be6db361.pdf",
+  SLG: "/manus-storage/diagnostico-slg_fb52dd5c.pdf",
+  PLG: "/manus-storage/diagnostico-plg_3eac95af.pdf",
+  MLG: "/manus-storage/diagnostico-mlg_f44172cf.pdf",
+  FLG: "/manus-storage/diagnostico-flg_129b9f47.pdf",
 };
 
 // ── Dados dos modelos ─────────────────────────────────────────────────────────
