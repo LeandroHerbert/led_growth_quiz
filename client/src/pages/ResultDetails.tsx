@@ -293,6 +293,24 @@ export default function ResultDetails() {
   const [isDownloading, setIsDownloading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Converte cores oklch (não suportadas pelo html2canvas) para rgb
+  // usando o próprio browser como conversor
+  const resolveOklchColors = (el: HTMLElement) => {
+    const allEls = [el, ...Array.from(el.querySelectorAll("*"))] as HTMLElement[];
+    const props = ["color", "backgroundColor", "borderColor", "borderTopColor", "borderBottomColor", "borderLeftColor", "borderRightColor", "outlineColor", "fill", "stroke"];
+    allEls.forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+      const computed = window.getComputedStyle(node);
+      props.forEach((prop) => {
+        const val = computed.getPropertyValue(prop);
+        if (val && val.includes("oklch")) {
+          // O browser já resolveu para rgb no getComputedStyle — aplica inline
+          (node.style as unknown as Record<string, string>)[prop] = val;
+        }
+      });
+    });
+  };
+
   const downloadDiagnostico = async (modelKey: string) => {
     if (!contentRef.current) return;
     setIsDownloading(true);
@@ -300,10 +318,21 @@ export default function ResultDetails() {
       const details = modelDetails[modelKey as keyof typeof modelDetails];
       if (!details) return;
 
-      // Importação dinâmica do html2pdf.js para evitar problemas de SSR
       const html2pdf = (await import("html2pdf.js")).default;
 
-      const filename = `Diagnostico-${details.name.replace(/\s+/g, '-')}-LedGrowthModels.pdf`;
+      // Clona o elemento para não alterar o DOM original
+      const clone = contentRef.current.cloneNode(true) as HTMLElement;
+      clone.style.position = "absolute";
+      clone.style.left = "-9999px";
+      clone.style.top = "0";
+      clone.style.width = "720px";
+      clone.style.background = "#071007";
+      document.body.appendChild(clone);
+
+      // Resolve oklch no clone usando valores computados do original
+      resolveOklchColors(clone);
+
+      const filename = `Diagnostico-${details.name.replace(/\s+/g, "-")}-LedGrowthModels.pdf`;
 
       await html2pdf()
         .set({
@@ -315,6 +344,11 @@ export default function ResultDetails() {
             useCORS: true,
             backgroundColor: "#071007",
             logging: false,
+            onclone: (clonedDoc: Document) => {
+              // Garante que o fundo do body clonado também seja escuro
+              const body = clonedDoc.body;
+              if (body) body.style.background = "#071007";
+            },
           },
           jsPDF: {
             unit: "mm",
@@ -322,8 +356,11 @@ export default function ResultDetails() {
             orientation: "portrait",
           },
         })
-        .from(contentRef.current)
-        .save();
+        .from(clone)
+        .save()
+        .finally(() => {
+          document.body.removeChild(clone);
+        });
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
       alert("Erro ao gerar o PDF. Por favor, tente novamente.");
