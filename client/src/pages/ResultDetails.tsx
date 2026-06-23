@@ -1,6 +1,8 @@
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, CheckCircle, AlertCircle, Target, TrendingUp, Download, Zap, ExternalLink } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 // ── Dados dos modelos ─────────────────────────────────────────────────────────
 
@@ -291,73 +293,57 @@ export default function ResultDetails() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/resultado/:model");
   const [isDownloading, setIsDownloading] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  const downloadDiagnostico = (modelKey: string) => {
+  const downloadDiagnostico = async (modelKey: string) => {
+    if (!contentRef.current) return;
     setIsDownloading(true);
     try {
       const details = modelDetails[modelKey as keyof typeof modelDetails];
       if (!details) return;
-      const text = `
-═══════════════════════════════════════════════════════════════
-  DIAGNÓSTICO — LED GROWTH MODELS
-═══════════════════════════════════════════════════════════════
 
-${details.icon}  ${details.name.toUpperCase()}
-${details.shortDescription}
+      // Captura o conteúdo como imagem em alta resolução
+      const canvas = await html2canvas(contentRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#071007",
+        logging: false,
+        windowWidth: 760,
+      });
 
-───────────────────────────────────────────────────────────────
-O QUE É ESTE MODELO?
-───────────────────────────────────────────────────────────────
-${details.overview}
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
 
-───────────────────────────────────────────────────────────────
-COMO FUNCIONA
-───────────────────────────────────────────────────────────────
-${details.howItWorks.map((item, i) => `${i + 1}. ${item}`).join('\n')}
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = pdfWidth / imgWidth;
+      const scaledHeight = imgHeight * ratio;
 
-───────────────────────────────────────────────────────────────
-PONTOS FORTES
-───────────────────────────────────────────────────────────────
-${details.strengths.map(s => `✓  ${s}`).join('\n')}
+      // Divide em múltiplas páginas se necessário
+      let yOffset = 0;
+      while (yOffset < scaledHeight) {
+        if (yOffset > 0) pdf.addPage();
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          0,
+          -yOffset,
+          pdfWidth,
+          scaledHeight
+        );
+        yOffset += pdfHeight;
+      }
 
-───────────────────────────────────────────────────────────────
-PONTOS DE ATENÇÃO
-───────────────────────────────────────────────────────────────
-${details.weaknesses.map(w => `✗  ${w}`).join('\n')}
-
-───────────────────────────────────────────────────────────────
-ESTRATÉGIAS DE APLICAÇÃO
-───────────────────────────────────────────────────────────────
-${details.applicationStrategies.map((s, i) => `${i + 1}. ${s.title}\n   ${s.description}`).join('\n\n')}
-
-───────────────────────────────────────────────────────────────
-AÇÕES INTERNAS
-───────────────────────────────────────────────────────────────
-${details.internalActions.map(a => `•  ${a}`).join('\n')}
-
-───────────────────────────────────────────────────────────────
-AÇÕES EXTERNAS
-───────────────────────────────────────────────────────────────
-${details.externalActions.map(a => `•  ${a}`).join('\n')}
-
-───────────────────────────────────────────────────────────────
-SEU PLANO DE AÇÃO
-───────────────────────────────────────────────────────────────
-${details.nextSteps.map((s, i) => `${i + 1}. ${s}`).join('\n')}
-
-═══════════════════════════════════════════════════════════════
-Diagnóstico gerado em ${new Date().toLocaleDateString('pt-BR')}
-LED GROWTH MODELS — Descubra o Modelo Ideal de Crescimento
-═══════════════════════════════════════════════════════════════
-      `.trim();
-      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Diagnostico-${details.name.replace(/\s+/g, '-')}.txt`;
-      link.style.display = "none";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      pdf.save(`Diagnostico-${details.name.replace(/\s+/g, '-')}-LedGrowthModels.pdf`);
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
+      alert("Erro ao gerar o PDF. Por favor, tente novamente.");
     } finally {
       setIsDownloading(false);
     }
@@ -398,7 +384,7 @@ LED GROWTH MODELS — Descubra o Modelo Ideal de Crescimento
     <div className="lgm-details" style={{ minHeight: "100vh", background: BG, padding: "40px 16px" }}>
       <style>{GLOBAL_STYLES}</style>
 
-      <div className="lgm-fade-up" style={{ maxWidth: "720px", margin: "0 auto" }}>
+      <div ref={contentRef} className="lgm-fade-up" style={{ maxWidth: "720px", margin: "0 auto" }}>
 
         {/* Topo */}
         <div style={{ marginBottom: "32px" }}>
