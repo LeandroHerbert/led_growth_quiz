@@ -1,8 +1,6 @@
 import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, CheckCircle, AlertCircle, Target, TrendingUp, Download, Zap, ExternalLink } from "lucide-react";
 import { useState, useRef } from "react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 // ── Dados dos modelos ─────────────────────────────────────────────────────────
 
@@ -302,45 +300,30 @@ export default function ResultDetails() {
       const details = modelDetails[modelKey as keyof typeof modelDetails];
       if (!details) return;
 
-      // Captura o conteúdo como imagem em alta resolução
-      const canvas = await html2canvas(contentRef.current, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#071007",
-        logging: false,
-        windowWidth: 760,
-      });
+      // Importação dinâmica do html2pdf.js para evitar problemas de SSR
+      const html2pdf = (await import("html2pdf.js")).default;
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
+      const filename = `Diagnostico-${details.name.replace(/\s+/g, '-')}-LedGrowthModels.pdf`;
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = pdfWidth / imgWidth;
-      const scaledHeight = imgHeight * ratio;
-
-      // Divide em múltiplas páginas se necessário
-      let yOffset = 0;
-      while (yOffset < scaledHeight) {
-        if (yOffset > 0) pdf.addPage();
-        pdf.addImage(
-          imgData,
-          "JPEG",
-          0,
-          -yOffset,
-          pdfWidth,
-          scaledHeight
-        );
-        yOffset += pdfHeight;
-      }
-
-      pdf.save(`Diagnostico-${details.name.replace(/\s+/g, '-')}-LedGrowthModels.pdf`);
+      await html2pdf()
+        .set({
+          margin: 0,
+          filename,
+          image: { type: "jpeg", quality: 0.95 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#071007",
+            logging: false,
+          },
+          jsPDF: {
+            unit: "mm",
+            format: "a4",
+            orientation: "portrait",
+          },
+        })
+        .from(contentRef.current)
+        .save();
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
       alert("Erro ao gerar o PDF. Por favor, tente novamente.");
