@@ -2,6 +2,14 @@ import { useLocation, useRoute } from "wouter";
 import { ArrowLeft, CheckCircle, AlertCircle, Target, TrendingUp, Download, Zap, ExternalLink } from "lucide-react";
 import { useState, useRef } from "react";
 
+// URLs dos PDFs hospedados como assets estáticos
+const PDF_URLS: Record<string, string> = {
+  SLG: "/manus-storage/diagnostico-slg_b3b8d3fd.pdf",
+  PLG: "/manus-storage/diagnostico-plg_9073ca46.pdf",
+  MLG: "/manus-storage/diagnostico-mlg_67ca6500.pdf",
+  FLG: "/manus-storage/diagnostico-flg_be6db361.pdf",
+};
+
 // ── Dados dos modelos ─────────────────────────────────────────────────────────
 
 const modelDetails = {
@@ -290,85 +298,18 @@ const BG = "linear-gradient(160deg, #071007 0%, #0c1a0c 45%, #071007 100%)";
 export default function ResultDetails() {
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/resultado/:model");
-  const [isDownloading, setIsDownloading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const downloadDiagnostico = async (modelKey: string) => {
-    if (!contentRef.current) return;
-    setIsDownloading(true);
-    try {
-      const details = modelDetails[modelKey as keyof typeof modelDetails];
-      if (!details) return;
-
-      const html2pdf = (await import("html2pdf.js")).default;
-      const filename = `Diagnostico-${details.name.replace(/\s+/g, "-")}-LedGrowthModels.pdf`;
-
-      // Função que substitui todas as variáveis CSS oklch no documento clonado
-      // O html2canvas não suporta oklch (Tailwind 4), então precisamos converter
-      // todas as ocorrências para rgb antes da captura
-      const fixOklchInDoc = (doc: Document) => {
-        // 1. Remove/substitui as variáveis CSS oklch no :root e em todos os <style>
-        const styles = doc.querySelectorAll("style");
-        styles.forEach((styleEl) => {
-          styleEl.textContent = (styleEl.textContent || "").replace(
-            /oklch\([^)]+\)/g,
-            "transparent"
-          );
-        });
-
-        // 2. Percorre todos os elementos e aplica cores computadas inline
-        // usando os valores já resolvidos pelo browser no documento ORIGINAL
-        const allOriginal = [contentRef.current!, ...Array.from(contentRef.current!.querySelectorAll("*"))];
-        const allCloned = [doc.body.firstElementChild as HTMLElement, ...Array.from((doc.body.firstElementChild as HTMLElement)?.querySelectorAll("*") ?? [])];
-
-        const cssProps = [
-          "color", "background-color", "border-color",
-          "border-top-color", "border-bottom-color",
-          "border-left-color", "border-right-color",
-        ];
-
-        allOriginal.forEach((origNode, i) => {
-          const clonedNode = allCloned[i] as HTMLElement | undefined;
-          if (!clonedNode || !(origNode instanceof HTMLElement)) return;
-          const computed = window.getComputedStyle(origNode);
-          cssProps.forEach((prop) => {
-            const val = computed.getPropertyValue(prop);
-            // Aplica sempre o valor computado (rgb) para garantir compatibilidade
-            if (val) clonedNode.style.setProperty(prop, val, "important");
-          });
-        });
-
-        // 3. Garante fundo escuro no body
-        doc.body.style.background = "#071007";
-        doc.body.style.backgroundColor = "#071007";
-      };
-
-      await html2pdf()
-        .set({
-          margin: 0,
-          filename,
-          image: { type: "jpeg", quality: 0.95 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: "#071007",
-            logging: false,
-            onclone: fixOklchInDoc,
-          },
-          jsPDF: {
-            unit: "mm",
-            format: "a4",
-            orientation: "portrait",
-          },
-        })
-        .from(contentRef.current)
-        .save();
-    } catch (err) {
-      console.error("Erro ao gerar PDF:", err);
-      alert("Erro ao gerar o PDF. Por favor, tente novamente.");
-    } finally {
-      setIsDownloading(false);
-    }
+  const downloadDiagnostico = (modelKey: string) => {
+    const url = PDF_URLS[modelKey];
+    if (!url) return;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `Diagnostico-${modelKey}-LedGrowthModels.pdf`;
+    a.target = "_blank";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   if (!match) {
@@ -561,18 +502,16 @@ export default function ResultDetails() {
         {/* Botão de download */}
         <button
           onClick={() => downloadDiagnostico(model)}
-          disabled={isDownloading}
           className="lgm-btn-pulse"
           style={{
-            width: "100%",
-            background: isDownloading ? "#1a3a0a" : "#39ff14",
+            background: "#39ff14",
             color: "#050f05",
             border: "none",
             borderRadius: "10px",
             padding: "15px 24px",
             fontSize: "15px",
             fontWeight: 800,
-            cursor: isDownloading ? "not-allowed" : "pointer",
+            cursor: "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -582,7 +521,7 @@ export default function ResultDetails() {
           }}
         >
           <Download size={16} />
-          {isDownloading ? "Gerando download..." : "Baixar meu diagnóstico"}
+          Baixar meu diagnóstico
         </button>
 
         <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "11px", textAlign: "center", marginTop: "16px" }}>
