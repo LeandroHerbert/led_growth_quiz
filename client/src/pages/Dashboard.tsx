@@ -18,7 +18,7 @@ import { CSS } from "@dnd-kit/utilities";
 import {
   BarChart3, TrendingUp, Loader2, Download, Users,
   MessageCircle, Calendar, CheckCircle, Phone, Trash2,
-  StickyNote, ChevronDown, ArrowLeft,
+  StickyNote, ChevronDown, ArrowLeft, Clock, Building2, XCircle,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import {
@@ -459,11 +459,225 @@ function CrmKanban() {
   );
 }
 
+// ── Aba Agendamentos ─────────────────────────────────────────────────────────
+
+const STATUS_AGEND: Record<string, { label: string; color: string }> = {
+  pendente:   { label: "Pendente",   color: "#f59e0b" },
+  confirmado: { label: "Confirmado", color: "#22c55e" },
+  cancelado:  { label: "Cancelado",  color: "#ef4444" },
+  realizado:  { label: "Realizado",  color: "#a855f7" },
+};
+
+function AbaAgendamentos() {
+  const [busca, setBusca] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("todos");
+
+  const { data: agends, isLoading, refetch } = trpc.agendamentos.listar.useQuery();
+  const atualizarStatus = trpc.agendamentos.atualizarStatus.useMutation({ onSuccess: () => refetch() });
+
+  const lista = (agends ?? []).filter((a: any) => {
+    const q = busca.toLowerCase();
+    const matchBusca = !busca || a.nome?.toLowerCase().includes(q) || a.email?.toLowerCase().includes(q) || a.whatsapp?.includes(q);
+    const matchStatus = filtroStatus === "todos" || a.status === filtroStatus;
+    return matchBusca && matchStatus;
+  });
+
+  const total = (agends ?? []).length;
+  const confirmados = (agends ?? []).filter((a: any) => a.status === "confirmado").length;
+  const realizados  = (agends ?? []).filter((a: any) => a.status === "realizado").length;
+  const cancelados  = (agends ?? []).filter((a: any) => a.status === "cancelado").length;
+
+  const exportCSV = () => {
+    if (!agends || agends.length === 0) { alert("Nenhum agendamento para exportar"); return; }
+    const headers = ["Nome", "E-mail", "WhatsApp", "Empresa", "Data/Hora", "Status"];
+    const rows = agends.map((a: any) => [
+      a.nome, a.email, a.whatsapp, a.empresa ?? "",
+      new Date(a.dataHora).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+      STATUS_AGEND[a.status]?.label ?? a.status,
+    ]);
+    const csv = [headers.join(","), ...rows.map((r: any[]) => r.map((v) => `"${v}"`).join(","))].join("\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
+    link.download = `agendamentos_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+  };
+
+  if (isLoading) return (
+    <div style={{ display: "flex", justifyContent: "center", padding: "64px" }}>
+      <Loader2 className="animate-spin" style={{ color: NEON, width: 32, height: 32 }} />
+    </div>
+  );
+
+  return (
+    <div>
+      {/* Métricas */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px", marginBottom: "24px" }}>
+        {[
+          { label: "Total",       value: total,       icon: <Calendar size={16} />,  color: "#3b82f6" },
+          { label: "Confirmados", value: confirmados, icon: <CheckCircle size={16} />, color: "#22c55e" },
+          { label: "Realizados",  value: realizados,  icon: <Clock size={16} />,      color: "#a855f7" },
+          { label: "Cancelados",  value: cancelados,  icon: <XCircle size={16} />,    color: "#ef4444" },
+        ].map((m) => (
+          <div key={m.label} style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "10px", padding: "14px" }}>
+            <div style={{ color: m.color, marginBottom: "6px" }}>{m.icon}</div>
+            <p style={{ fontSize: "26px", fontWeight: 800, color: m.color, margin: 0 }}>{m.value}</p>
+            <p style={{ fontSize: "11px", color: MUTED, margin: 0 }}>{m.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Filtros */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
+        <input
+          type="text"
+          placeholder="Buscar por nome, e-mail ou WhatsApp..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          style={{
+            flex: 1, minWidth: "200px", padding: "9px 14px", borderRadius: "8px",
+            border: "1px solid rgba(57,255,20,0.2)", fontSize: "13px",
+            background: "rgba(0,0,0,0.4)", color: TEXT,
+          }}
+        />
+        <select
+          value={filtroStatus}
+          onChange={(e) => setFiltroStatus(e.target.value)}
+          style={{
+            padding: "9px 14px", borderRadius: "8px",
+            border: "1px solid rgba(57,255,20,0.2)", fontSize: "13px",
+            background: "rgba(0,0,0,0.4)", color: TEXT, cursor: "pointer",
+          }}
+        >
+          <option value="todos">Todos os status</option>
+          {Object.entries(STATUS_AGEND).map(([k, v]) => (
+            <option key={k} value={k}>{v.label}</option>
+          ))}
+        </select>
+        <button onClick={exportCSV} style={{
+          display: "flex", alignItems: "center", gap: "6px",
+          background: NEON, color: "#000", border: "none", borderRadius: "8px",
+          padding: "9px 16px", fontSize: "13px", fontWeight: 800, cursor: "pointer",
+        }}>
+          <Download size={14} /> Exportar CSV
+        </button>
+      </div>
+
+      {/* Tabela */}
+      <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "12px", overflow: "hidden" }}>
+        {/* Cabeçalho */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "2fr 2fr 1.5fr 1.5fr 1.5fr 1.2fr",
+          gap: "12px", padding: "12px 20px",
+          borderBottom: "1px solid rgba(57,255,20,0.1)",
+          background: "rgba(57,255,20,0.04)",
+        }}>
+          {["Nome", "E-mail", "WhatsApp", "Empresa", "Data/Hora", "Status"].map((h) => (
+            <span key={h} style={{ fontSize: "11px", fontWeight: 700, color: MUTED, letterSpacing: "0.08em", textTransform: "uppercase" }}>{h}</span>
+          ))}
+        </div>
+
+        {/* Linhas */}
+        {lista.length === 0 ? (
+          <div style={{ padding: "40px", textAlign: "center", color: MUTED, fontSize: "14px" }}>
+            {busca || filtroStatus !== "todos" ? "Nenhum resultado para os filtros aplicados." : "Nenhum agendamento registrado ainda."}
+          </div>
+        ) : (
+          lista.map((a: any, idx: number) => {
+            const whatsappNum = a.whatsapp?.replace(/\D/g, "");
+            const dataFormatada = new Date(a.dataHora).toLocaleString("pt-BR", {
+              timeZone: "America/Sao_Paulo",
+              weekday: "short", day: "2-digit", month: "2-digit",
+              hour: "2-digit", minute: "2-digit",
+            });
+            const statusInfo = STATUS_AGEND[a.status] ?? { label: a.status, color: MUTED };
+            return (
+              <div
+                key={a.id}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "2fr 2fr 1.5fr 1.5fr 1.5fr 1.2fr",
+                  gap: "12px", padding: "14px 20px",
+                  borderBottom: idx < lista.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
+                  alignItems: "center",
+                }}
+              >
+                {/* Nome */}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+                    background: "rgba(57,255,20,0.1)", border: "1.5px solid rgba(57,255,20,0.3)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontWeight: 800, fontSize: "13px", color: NEON,
+                  }}>
+                    {a.nome?.charAt(0).toUpperCase() ?? "?"}
+                  </div>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: TEXT, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {a.nome}
+                  </span>
+                </div>
+
+                {/* E-mail */}
+                <span style={{ fontSize: "12px", color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {a.email}
+                </span>
+
+                {/* WhatsApp */}
+                <a
+                  href={`https://wa.me/55${whatsappNum}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: "5px",
+                    color: "#22c55e", fontSize: "12px", fontWeight: 600, textDecoration: "none",
+                  }}
+                >
+                  <Phone size={11} /> {a.whatsapp}
+                </a>
+
+                {/* Empresa */}
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  {a.empresa ? (
+                    <><Building2 size={11} style={{ color: MUTED, flexShrink: 0 }} />
+                    <span style={{ fontSize: "12px", color: MUTED, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.empresa}</span></>
+                  ) : (
+                    <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.2)" }}>—</span>
+                  )}
+                </div>
+
+                {/* Data/Hora */}
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                  <Clock size={11} style={{ color: MUTED, flexShrink: 0 }} />
+                  <span style={{ fontSize: "12px", color: TEXT, whiteSpace: "nowrap" }}>{dataFormatada}</span>
+                </div>
+
+                {/* Status (select inline) */}
+                <select
+                  value={a.status}
+                  onChange={(e) => atualizarStatus.mutate({ id: a.id, status: e.target.value as any })}
+                  style={{
+                    padding: "5px 8px", borderRadius: "6px", border: `1px solid ${statusInfo.color}55`,
+                    background: `${statusInfo.color}18`, color: statusInfo.color,
+                    fontSize: "11px", fontWeight: 700, cursor: "pointer", width: "100%",
+                  }}
+                >
+                  {Object.entries(STATUS_AGEND).map(([k, v]) => (
+                    <option key={k} value={k} style={{ background: "#0d2b14", color: v.color }}>{v.label}</option>
+                  ))}
+                </select>
+              </div>
+            );
+          })
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Dashboard principal ───────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const [aba, setAba] = useState<"analytics" | "crm">("crm");
+  const [aba, setAba] = useState<"analytics" | "crm" | "agendamentos">("crm");
 
   const { data: analytics, isLoading, error } = trpc.quiz.getAnalytics.useQuery();
   const { data: detailedData } = trpc.quiz.getDetailedData.useQuery();
@@ -546,8 +760,9 @@ export default function Dashboard() {
         {/* Abas */}
         <div style={{ display: "flex", gap: "4px", marginBottom: "28px", background: "rgba(255,255,255,0.04)", borderRadius: "10px", padding: "4px", width: "fit-content" }}>
           {[
-            { id: "crm", label: "CRM de Leads", icon: <Users size={14} /> },
-            { id: "analytics", label: "Analytics", icon: <BarChart3 size={14} /> },
+            { id: "crm",          label: "CRM de Leads",   icon: <Users size={14} /> },
+            { id: "agendamentos", label: "Agendamentos",   icon: <Calendar size={14} /> },
+            { id: "analytics",   label: "Analytics",      icon: <BarChart3 size={14} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -569,6 +784,8 @@ export default function Dashboard() {
         {/* Conteúdo */}
         {aba === "crm" ? (
           <CrmKanban />
+        ) : aba === "agendamentos" ? (
+          <AbaAgendamentos />
         ) : (
           <>
             {isLoading ? (

@@ -25,7 +25,7 @@
 - [x] Remover pergunta 9 redundante (ciclo de vendas) - agora são 11 perguntas
 
 ## Otimizações de Texto e Visual
-- [ ] Remover logo da UN
-- [ ] Alterar subtítulo do quiz
-- [ ] Revisar textos de todas as perguntas e opções
-- [ ] Revisar textos dos diagnósticos na página de resultado
+- [x] Remover logo da UN
+- [x] Alterar subtítulo do quiz
+- [x] Revisar textos de todas as perguntas e opções
+- [x] Revisar textos dos diagnósticos na página de resultado
