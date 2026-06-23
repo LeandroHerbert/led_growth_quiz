@@ -293,24 +293,6 @@ export default function ResultDetails() {
   const [isDownloading, setIsDownloading] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Converte cores oklch (não suportadas pelo html2canvas) para rgb
-  // usando o próprio browser como conversor
-  const resolveOklchColors = (el: HTMLElement) => {
-    const allEls = [el, ...Array.from(el.querySelectorAll("*"))] as HTMLElement[];
-    const props = ["color", "backgroundColor", "borderColor", "borderTopColor", "borderBottomColor", "borderLeftColor", "borderRightColor", "outlineColor", "fill", "stroke"];
-    allEls.forEach((node) => {
-      if (!(node instanceof HTMLElement)) return;
-      const computed = window.getComputedStyle(node);
-      props.forEach((prop) => {
-        const val = computed.getPropertyValue(prop);
-        if (val && val.includes("oklch")) {
-          // O browser já resolveu para rgb no getComputedStyle — aplica inline
-          (node.style as unknown as Record<string, string>)[prop] = val;
-        }
-      });
-    });
-  };
-
   const downloadDiagnostico = async (modelKey: string) => {
     if (!contentRef.current) return;
     setIsDownloading(true);
@@ -319,20 +301,47 @@ export default function ResultDetails() {
       if (!details) return;
 
       const html2pdf = (await import("html2pdf.js")).default;
-
-      // Clona o elemento para não alterar o DOM original
-      const clone = contentRef.current.cloneNode(true) as HTMLElement;
-      clone.style.position = "absolute";
-      clone.style.left = "-9999px";
-      clone.style.top = "0";
-      clone.style.width = "720px";
-      clone.style.background = "#071007";
-      document.body.appendChild(clone);
-
-      // Resolve oklch no clone usando valores computados do original
-      resolveOklchColors(clone);
-
       const filename = `Diagnostico-${details.name.replace(/\s+/g, "-")}-LedGrowthModels.pdf`;
+
+      // Função que substitui todas as variáveis CSS oklch no documento clonado
+      // O html2canvas não suporta oklch (Tailwind 4), então precisamos converter
+      // todas as ocorrências para rgb antes da captura
+      const fixOklchInDoc = (doc: Document) => {
+        // 1. Remove/substitui as variáveis CSS oklch no :root e em todos os <style>
+        const styles = doc.querySelectorAll("style");
+        styles.forEach((styleEl) => {
+          styleEl.textContent = (styleEl.textContent || "").replace(
+            /oklch\([^)]+\)/g,
+            "transparent"
+          );
+        });
+
+        // 2. Percorre todos os elementos e aplica cores computadas inline
+        // usando os valores já resolvidos pelo browser no documento ORIGINAL
+        const allOriginal = [contentRef.current!, ...Array.from(contentRef.current!.querySelectorAll("*"))];
+        const allCloned = [doc.body.firstElementChild as HTMLElement, ...Array.from((doc.body.firstElementChild as HTMLElement)?.querySelectorAll("*") ?? [])];
+
+        const cssProps = [
+          "color", "background-color", "border-color",
+          "border-top-color", "border-bottom-color",
+          "border-left-color", "border-right-color",
+        ];
+
+        allOriginal.forEach((origNode, i) => {
+          const clonedNode = allCloned[i] as HTMLElement | undefined;
+          if (!clonedNode || !(origNode instanceof HTMLElement)) return;
+          const computed = window.getComputedStyle(origNode);
+          cssProps.forEach((prop) => {
+            const val = computed.getPropertyValue(prop);
+            // Aplica sempre o valor computado (rgb) para garantir compatibilidade
+            if (val) clonedNode.style.setProperty(prop, val, "important");
+          });
+        });
+
+        // 3. Garante fundo escuro no body
+        doc.body.style.background = "#071007";
+        doc.body.style.backgroundColor = "#071007";
+      };
 
       await html2pdf()
         .set({
@@ -344,11 +353,7 @@ export default function ResultDetails() {
             useCORS: true,
             backgroundColor: "#071007",
             logging: false,
-            onclone: (clonedDoc: Document) => {
-              // Garante que o fundo do body clonado também seja escuro
-              const body = clonedDoc.body;
-              if (body) body.style.background = "#071007";
-            },
+            onclone: fixOklchInDoc,
           },
           jsPDF: {
             unit: "mm",
@@ -356,11 +361,8 @@ export default function ResultDetails() {
             orientation: "portrait",
           },
         })
-        .from(clone)
-        .save()
-        .finally(() => {
-          document.body.removeChild(clone);
-        });
+        .from(contentRef.current)
+        .save();
     } catch (err) {
       console.error("Erro ao gerar PDF:", err);
       alert("Erro ao gerar o PDF. Por favor, tente novamente.");
