@@ -3,7 +3,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { z } from "zod";
-import { saveQuizResponse, saveQuizCompletion, getQuizAnalytics, getDetailedQuizData } from "./quizDb";
+import { saveQuizResponse, saveQuizCompletion, getQuizAnalytics, getDetailedQuizData, getQuizLeadsWithResults } from "./quizDb";
 import { notifyOwner } from "./_core/notification";
 import { getDb } from "./db";
 import { eventoLeads, quizLeads } from "../drizzle/schema";
@@ -146,6 +146,11 @@ export const appRouter = router({
         .select()
         .from(quizLeads)
         .orderBy(desc(quizLeads.createdAt));
+    }),
+
+    /** Lista leads com resultado para exportação CSV completa */
+    listarParaExport: publicProcedure.query(async () => {
+      return await getQuizLeadsWithResults();
     }),
 
     /** Atualiza o status CRM */

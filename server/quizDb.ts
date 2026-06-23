@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import { quizResponses, quizCompletions, InsertQuizResponse, InsertQuizCompletion } from "../drizzle/schema";
+import { quizResponses, quizCompletions, quizLeads, InsertQuizResponse, InsertQuizCompletion } from "../drizzle/schema";
 import { getDb } from "./db";
 
 export async function saveQuizResponse(response: InsertQuizResponse) {
@@ -110,6 +110,35 @@ export async function getDetailedQuizData() {
     }));
   } catch (error) {
     console.error("[Database] Failed to get detailed quiz data:", error);
+    return [];
+  }
+}
+
+export async function getQuizLeadsWithResults() {
+  const db = await getDb();
+  if (!db) return [];
+
+  try {
+    const leads = await db
+      .select({
+        id: quizLeads.id,
+        sessionId: quizLeads.sessionId,
+        nome: quizLeads.nome,
+        email: quizLeads.email,
+        whatsapp: quizLeads.whatsapp,
+        resultadoModelo: quizLeads.resultadoModelo,
+        crmStatus: quizLeads.crmStatus,
+        dataSessao: quizLeads.dataSessao,
+        notas: quizLeads.notas,
+        createdAt: quizLeads.createdAt,
+        updatedAt: quizLeads.updatedAt,
+      })
+      .from(quizLeads)
+      .orderBy(quizLeads.createdAt);
+
+    return leads;
+  } catch (error) {
+    console.error("[Database] Failed to get quiz leads with results:", error);
     return [];
   }
 }

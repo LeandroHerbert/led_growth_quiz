@@ -1,10 +1,24 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { useState, useCallback } from "react";
 import {
-  ArrowLeft, BarChart3, TrendingUp, Loader2, Download,
-  Users, MessageCircle, Calendar, CheckCircle, XCircle,
-  Phone, ChevronDown, StickyNote, Trash2,
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragStartEvent,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  BarChart3, TrendingUp, Loader2, Download, Users,
+  MessageCircle, Calendar, CheckCircle, Phone, Trash2,
+  StickyNote, ChevronDown, ArrowLeft,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import {
@@ -13,35 +27,45 @@ import {
 } from "recharts";
 import { trpc } from "@/lib/trpc";
 
-// ── Constantes ────────────────────────────────────────────────────────────────
+// ── Paleta ────────────────────────────────────────────────────────────────────
 
-const COLORS = { SLG: "#3b82f6", PLG: "#a855f7", MLG: "#22c55e", FLG: "#ef4444" };
+const NEON = "#39ff14";
+const BG = "linear-gradient(135deg, #071a0e 0%, #0d2b14 50%, #071a0e 100%)";
+const CARD_BG = "rgba(255,255,255,0.04)";
+const CARD_BORDER = "1px solid rgba(57,255,20,0.15)";
+const TEXT = "#e8ffe8";
+const MUTED = "#7aad7a";
 
-const modelNames: Record<string, string> = {
+const MODEL_COLORS: Record<string, string> = {
+  SLG: "#3b82f6",
+  PLG: "#a855f7",
+  MLG: "#22c55e",
+  FLG: "#f59e0b",
+};
+
+const MODEL_NAMES: Record<string, string> = {
   SLG: "Sales-Led Growth",
   PLG: "Product-Led Growth",
   MLG: "Marketing-Led Growth",
   FLG: "Founder-Led Growth",
 };
 
-const modelEmoji: Record<string, string> = {
-  SLG: "📞", PLG: "🎯", MLG: "📢", FLG: "⭐",
-};
+// ── Pipeline CRM ──────────────────────────────────────────────────────────────
 
 type CrmStatus = "novo" | "em_contato" | "sessao_marcada" | "sessao_realizada" | "comprou" | "nao_comprou";
 
-const crmStatusConfig: Record<CrmStatus, { label: string; color: string; bg: string }> = {
-  novo:             { label: "Novo",              color: "#6b7280", bg: "#f3f4f6" },
-  em_contato:       { label: "Em contato",        color: "#2563eb", bg: "#dbeafe" },
-  sessao_marcada:   { label: "Sessão marcada",    color: "#d97706", bg: "#fef3c7" },
-  sessao_realizada: { label: "Sessão realizada",  color: "#7c3aed", bg: "#ede9fe" },
-  comprou:          { label: "Comprou",           color: "#16a34a", bg: "#dcfce7" },
-  nao_comprou:      { label: "Não comprou",       color: "#dc2626", bg: "#fee2e2" },
-};
+const PIPELINE: { id: CrmStatus; label: string; color: string }[] = [
+  { id: "novo",             label: "Novo",             color: "#6b7280" },
+  { id: "em_contato",       label: "Em contato",       color: "#3b82f6" },
+  { id: "sessao_marcada",   label: "Sessão marcada",   color: "#f59e0b" },
+  { id: "sessao_realizada", label: "Sessão realizada", color: "#a855f7" },
+  { id: "comprou",          label: "Comprou",          color: "#22c55e" },
+  { id: "nao_comprou",      label: "Não comprou",      color: "#ef4444" },
+];
 
-// ── Componente CRM Row ────────────────────────────────────────────────────────
+// ── Card de lead (sortable) ───────────────────────────────────────────────────
 
-function CrmRow({ lead, onRefresh }: { lead: any; onRefresh: () => void }) {
+function LeadCard({ lead, onRefresh, isDragging = false }: { lead: any; onRefresh: () => void; isDragging?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const [nota, setNota] = useState(lead.notas ?? "");
   const [dataSessao, setDataSessao] = useState(lead.dataSessao ?? "");
@@ -51,118 +75,95 @@ function CrmRow({ lead, onRefresh }: { lead: any; onRefresh: () => void }) {
   const salvarNotas = trpc.quizLeads.salvarNotas.useMutation({ onSuccess: onRefresh });
   const remover = trpc.quizLeads.remover.useMutation({ onSuccess: onRefresh });
 
-  const statusCfg = crmStatusConfig[lead.crmStatus as CrmStatus] ?? crmStatusConfig.novo;
-  const whatsappLink = `https://wa.me/55${lead.whatsapp}`;
+  const whatsappNum = lead.whatsapp?.replace(/\D/g, "");
+  const whatsappLink = `https://wa.me/55${whatsappNum}`;
+  const modelColor = lead.resultadoModelo ? MODEL_COLORS[lead.resultadoModelo] ?? NEON : MUTED;
 
-  const handleStatusChange = (newStatus: CrmStatus) => {
-    const update: any = { id: lead.id, crmStatus: newStatus };
-    if (newStatus === "sessao_marcada" && dataSessao) update.dataSessao = dataSessao;
-    atualizarStatus.mutate(update);
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: lead.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
   };
 
   return (
-    <div style={{
-      border: "1px solid #e5e7eb",
-      borderRadius: "10px",
-      marginBottom: "10px",
-      overflow: "hidden",
-      background: "#fff",
-    }}>
-      {/* Linha principal */}
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        background: "rgba(7,26,14,0.95)",
+        border: `1px solid ${modelColor}33`,
+        borderRadius: "10px",
+        marginBottom: "8px",
+        overflow: "hidden",
+        cursor: "grab",
+      }}
+    >
+      {/* Linha principal — drag handle */}
       <div
-        style={{ display: "flex", alignItems: "center", padding: "14px 16px", gap: "12px", cursor: "pointer" }}
+        {...attributes}
+        {...listeners}
+        style={{ display: "flex", alignItems: "center", padding: "12px 14px", gap: "10px" }}
         onClick={() => setExpanded(!expanded)}
       >
-        {/* Avatar */}
+        {/* Avatar com inicial */}
         <div style={{
-          width: 38, height: 38, borderRadius: "50%",
-          background: lead.resultadoModelo ? COLORS[lead.resultadoModelo as keyof typeof COLORS] + "22" : "#f3f4f6",
+          width: 36, height: 36, borderRadius: "50%",
+          background: `${modelColor}22`,
+          border: `1.5px solid ${modelColor}55`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "18px", flexShrink: 0,
+          fontWeight: 800, fontSize: "14px", color: modelColor, flexShrink: 0,
         }}>
-          {lead.resultadoModelo ? modelEmoji[lead.resultadoModelo] ?? "❓" : "❓"}
+          {lead.nome?.charAt(0).toUpperCase() ?? "?"}
         </div>
 
         {/* Nome + email */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontWeight: 700, fontSize: "14px", color: "#111", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <p style={{ fontWeight: 700, fontSize: "13px", color: TEXT, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {lead.nome}
           </p>
-          <p style={{ fontSize: "12px", color: "#6b7280", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <p style={{ fontSize: "11px", color: MUTED, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {lead.email}
           </p>
         </div>
 
-        {/* Resultado */}
-        {lead.resultadoModelo ? (
+        {/* Badge modelo */}
+        {lead.resultadoModelo && (
           <span style={{
-            fontSize: "11px", fontWeight: 700, padding: "3px 8px", borderRadius: "20px",
-            background: COLORS[lead.resultadoModelo as keyof typeof COLORS] + "22",
-            color: COLORS[lead.resultadoModelo as keyof typeof COLORS],
-            flexShrink: 0,
+            fontSize: "10px", fontWeight: 800, padding: "2px 7px", borderRadius: "20px",
+            background: `${modelColor}22`, color: modelColor, flexShrink: 0, letterSpacing: "0.05em",
           }}>
             {lead.resultadoModelo}
           </span>
-        ) : (
-          <span style={{ fontSize: "11px", color: "#9ca3af", flexShrink: 0 }}>Pendente</span>
         )}
 
-        {/* Status CRM */}
-        <span style={{
-          fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: "20px",
-          background: statusCfg.bg, color: statusCfg.color, flexShrink: 0,
-        }}>
-          {statusCfg.label}
-        </span>
-
-        {/* Data */}
-        <span style={{ fontSize: "11px", color: "#9ca3af", flexShrink: 0, display: "none" }}
-          className="hidden md:block">
-          {new Date(lead.createdAt).toLocaleDateString("pt-BR")}
-        </span>
-
-        <ChevronDown size={16} style={{ color: "#9ca3af", flexShrink: 0, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+        <ChevronDown size={14} style={{ color: MUTED, flexShrink: 0, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
       </div>
 
       {/* Painel expandido */}
       {expanded && (
-        <div style={{ borderTop: "1px solid #f3f4f6", padding: "16px", background: "#fafafa" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px", marginBottom: "16px" }}>
+        <div style={{ borderTop: `1px solid rgba(57,255,20,0.1)`, padding: "14px", background: "rgba(0,0,0,0.3)" }}>
 
-            {/* WhatsApp */}
+          {/* Ações rápidas */}
+          <div style={{ display: "flex", gap: "8px", marginBottom: "14px", flexWrap: "wrap" }}>
             <a href={whatsappLink} target="_blank" rel="noopener noreferrer"
               style={{
-                display: "flex", alignItems: "center", gap: "8px",
+                display: "inline-flex", alignItems: "center", gap: "6px",
                 background: "#22c55e", color: "#fff", borderRadius: "8px",
-                padding: "10px 14px", textDecoration: "none", fontWeight: 700, fontSize: "13px",
+                padding: "8px 14px", textDecoration: "none", fontWeight: 700, fontSize: "12px",
               }}>
-              <Phone size={15} /> Abrir WhatsApp
+              <Phone size={13} /> WhatsApp
             </a>
+            <span style={{ fontSize: "12px", color: MUTED, alignSelf: "center" }}>
+              {lead.whatsapp} · {lead.email}
+            </span>
+          </div>
 
-            {/* Pipeline CRM */}
-            <div>
-              <label style={{ fontSize: "11px", fontWeight: 600, color: "#6b7280", display: "block", marginBottom: "4px" }}>
-                ETAPA DO PIPELINE
-              </label>
-              <select
-                value={lead.crmStatus}
-                onChange={(e) => handleStatusChange(e.target.value as CrmStatus)}
-                disabled={atualizarStatus.isPending}
-                style={{
-                  width: "100%", padding: "8px 10px", borderRadius: "6px",
-                  border: "1px solid #d1d5db", fontSize: "13px", background: "#fff",
-                  color: "#111", cursor: "pointer",
-                }}
-              >
-                {Object.entries(crmStatusConfig).map(([k, v]) => (
-                  <option key={k} value={k}>{v.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Data da sessão */}
-            <div>
-              <label style={{ fontSize: "11px", fontWeight: 600, color: "#6b7280", display: "block", marginBottom: "4px" }}>
+          {/* Data da sessão */}
+          {(lead.crmStatus === "sessao_marcada" || lead.crmStatus === "sessao_realizada") && (
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ fontSize: "10px", fontWeight: 700, color: MUTED, display: "block", marginBottom: "4px", letterSpacing: "0.08em" }}>
                 DATA DA SESSÃO
               </label>
               <div style={{ display: "flex", gap: "6px" }}>
@@ -171,53 +172,52 @@ function CrmRow({ lead, onRefresh }: { lead: any; onRefresh: () => void }) {
                   value={dataSessao}
                   onChange={(e) => setDataSessao(e.target.value)}
                   style={{
-                    flex: 1, padding: "8px 10px", borderRadius: "6px",
-                    border: "1px solid #d1d5db", fontSize: "13px", background: "#fff",
+                    flex: 1, padding: "7px 10px", borderRadius: "6px",
+                    border: "1px solid rgba(57,255,20,0.2)", fontSize: "12px",
+                    background: "rgba(0,0,0,0.4)", color: TEXT,
                   }}
                 />
                 <button
                   onClick={() => atualizarStatus.mutate({ id: lead.id, crmStatus: lead.crmStatus, dataSessao })}
-                  disabled={atualizarStatus.isPending}
                   style={{
-                    padding: "8px 12px", borderRadius: "6px", border: "none",
-                    background: "#2563eb", color: "#fff", fontSize: "12px",
-                    fontWeight: 700, cursor: "pointer",
+                    padding: "7px 12px", borderRadius: "6px", border: "none",
+                    background: NEON, color: "#000", fontSize: "11px", fontWeight: 800, cursor: "pointer",
                   }}
                 >
                   Salvar
                 </button>
               </div>
               {lead.dataSessao && (
-                <p style={{ fontSize: "11px", color: "#6b7280", marginTop: "4px" }}>
+                <p style={{ fontSize: "11px", color: MUTED, marginTop: "4px" }}>
                   Agendada: {lead.dataSessao}
                 </p>
               )}
             </div>
-          </div>
+          )}
 
           {/* Notas */}
           <div style={{ marginBottom: "12px" }}>
-            <label style={{ fontSize: "11px", fontWeight: 600, color: "#6b7280", display: "flex", alignItems: "center", gap: "4px", marginBottom: "4px" }}>
-              <StickyNote size={12} /> ANOTAÇÕES
+            <label style={{ fontSize: "10px", fontWeight: 700, color: MUTED, display: "flex", alignItems: "center", gap: "4px", marginBottom: "4px", letterSpacing: "0.08em" }}>
+              <StickyNote size={11} /> ANOTAÇÕES
             </label>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{ display: "flex", gap: "6px" }}>
               <textarea
                 value={nota}
                 onChange={(e) => setNota(e.target.value)}
                 rows={2}
-                placeholder="Adicione observações sobre este lead..."
+                placeholder="Observações sobre este lead..."
                 style={{
-                  flex: 1, padding: "8px 10px", borderRadius: "6px",
-                  border: "1px solid #d1d5db", fontSize: "13px",
-                  resize: "vertical", fontFamily: "inherit",
+                  flex: 1, padding: "7px 10px", borderRadius: "6px",
+                  border: "1px solid rgba(57,255,20,0.2)", fontSize: "12px",
+                  background: "rgba(0,0,0,0.4)", color: TEXT, resize: "vertical", fontFamily: "inherit",
                 }}
               />
               <button
                 onClick={() => salvarNotas.mutate({ id: lead.id, notas: nota })}
                 disabled={salvarNotas.isPending}
                 style={{
-                  padding: "8px 12px", borderRadius: "6px", border: "none",
-                  background: "#6b7280", color: "#fff", fontSize: "12px",
+                  padding: "7px 10px", borderRadius: "6px", border: "none",
+                  background: "rgba(57,255,20,0.15)", color: NEON, fontSize: "11px",
                   fontWeight: 700, cursor: "pointer", alignSelf: "flex-start",
                 }}
               >
@@ -226,25 +226,25 @@ function CrmRow({ lead, onRefresh }: { lead: any; onRefresh: () => void }) {
             </div>
           </div>
 
-          {/* Info + Delete */}
+          {/* Rodapé */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <p style={{ fontSize: "11px", color: "#9ca3af", margin: 0 }}>
-              Cadastrado em {new Date(lead.createdAt).toLocaleString("pt-BR")}
+            <p style={{ fontSize: "10px", color: MUTED, margin: 0 }}>
+              {new Date(lead.createdAt).toLocaleString("pt-BR")}
             </p>
             {!confirmDelete ? (
               <button onClick={() => setConfirmDelete(true)}
-                style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontSize: "12px" }}>
-                <Trash2 size={13} /> Remover
+                style={{ background: "none", border: "none", color: "#ef4444", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontSize: "11px" }}>
+                <Trash2 size={12} /> Remover
               </button>
             ) : (
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <span style={{ fontSize: "12px", color: "#6b7280" }}>Confirmar remoção?</span>
+              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                <span style={{ fontSize: "11px", color: MUTED }}>Confirmar?</span>
                 <button onClick={() => remover.mutate({ id: lead.id })}
-                  style={{ background: "#ef4444", border: "none", color: "#fff", borderRadius: "4px", padding: "4px 10px", fontSize: "12px", cursor: "pointer" }}>
+                  style={{ background: "#ef4444", border: "none", color: "#fff", borderRadius: "4px", padding: "3px 8px", fontSize: "11px", cursor: "pointer" }}>
                   Sim
                 </button>
                 <button onClick={() => setConfirmDelete(false)}
-                  style={{ background: "#e5e7eb", border: "none", color: "#374151", borderRadius: "4px", padding: "4px 10px", fontSize: "12px", cursor: "pointer" }}>
+                  style={{ background: "rgba(255,255,255,0.1)", border: "none", color: TEXT, borderRadius: "4px", padding: "3px 8px", fontSize: "11px", cursor: "pointer" }}>
                   Não
                 </button>
               </div>
@@ -256,56 +256,159 @@ function CrmRow({ lead, onRefresh }: { lead: any; onRefresh: () => void }) {
   );
 }
 
-// ── Aba CRM ───────────────────────────────────────────────────────────────────
+// ── Coluna Kanban ─────────────────────────────────────────────────────────────
 
-function CrmTab() {
-  const [filtroStatus, setFiltroStatus] = useState<string>("todos");
+function KanbanColumn({ stage, leads, onRefresh }: { stage: typeof PIPELINE[0]; leads: any[]; onRefresh: () => void }) {
+  const ids = leads.map((l) => l.id);
+
+  return (
+    <div style={{
+      background: CARD_BG,
+      border: CARD_BORDER,
+      borderRadius: "12px",
+      padding: "14px",
+      minWidth: "240px",
+      flex: "1 1 240px",
+      maxWidth: "320px",
+    }}>
+      {/* Cabeçalho da coluna */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: stage.color }} />
+          <span style={{ fontWeight: 700, fontSize: "12px", color: TEXT, letterSpacing: "0.05em" }}>
+            {stage.label.toUpperCase()}
+          </span>
+        </div>
+        <span style={{
+          background: `${stage.color}22`, color: stage.color,
+          fontSize: "11px", fontWeight: 800, padding: "2px 8px", borderRadius: "20px",
+        }}>
+          {leads.length}
+        </span>
+      </div>
+
+      {/* Cards */}
+      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+        {leads.length === 0 ? (
+          <div style={{
+            border: "1px dashed rgba(57,255,20,0.1)", borderRadius: "8px",
+            padding: "20px", textAlign: "center", color: MUTED, fontSize: "12px",
+          }}>
+            Nenhum lead
+          </div>
+        ) : (
+          leads.map((lead) => (
+            <LeadCard key={lead.id} lead={lead} onRefresh={onRefresh} />
+          ))
+        )}
+      </SortableContext>
+    </div>
+  );
+}
+
+// ── Aba CRM Kanban ────────────────────────────────────────────────────────────
+
+function CrmKanban() {
   const [busca, setBusca] = useState("");
+  const [activeId, setActiveId] = useState<number | null>(null);
 
   const { data: leads, isLoading, refetch } = trpc.quizLeads.listar.useQuery();
+  const { data: leadsExport } = trpc.quizLeads.listarParaExport.useQuery();
+  const atualizarStatus = trpc.quizLeads.atualizarStatus.useMutation({ onSuccess: () => refetch() });
+
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const leadsFiltrados = (leads ?? []).filter((l: any) => {
-    const matchStatus = filtroStatus === "todos" || l.crmStatus === filtroStatus;
-    const matchBusca = !busca || l.nome.toLowerCase().includes(busca.toLowerCase()) ||
-      l.email.toLowerCase().includes(busca.toLowerCase()) || l.whatsapp.includes(busca);
-    return matchStatus && matchBusca;
+    if (!busca) return true;
+    const q = busca.toLowerCase();
+    return l.nome?.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q) || l.whatsapp?.includes(q);
   });
 
-  // Métricas rápidas
+  const leadsByStatus = useCallback((status: CrmStatus) =>
+    leadsFiltrados.filter((l: any) => l.crmStatus === status),
+    [leadsFiltrados]
+  );
+
+  const activeCard = activeId ? (leads ?? []).find((l: any) => l.id === activeId) : null;
+
+  const handleDragStart = (event: DragStartEvent) => setActiveId(event.active.id as number);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+    if (!over || active.id === over.id) return;
+
+    // Verifica se o over é uma coluna (string) ou um card (number)
+    const overId = over.id as string;
+    const isColumn = PIPELINE.some((s) => s.id === overId);
+    if (isColumn) {
+      atualizarStatus.mutate({ id: active.id as number, crmStatus: overId as CrmStatus });
+    } else {
+      // Encontra o status do card de destino
+      const targetCard = (leads ?? []).find((l: any) => l.id === over.id);
+      if (targetCard && targetCard.crmStatus !== (leads ?? []).find((l: any) => l.id === active.id)?.crmStatus) {
+        atualizarStatus.mutate({ id: active.id as number, crmStatus: targetCard.crmStatus });
+      }
+    }
+  };
+
+  const exportCSV = () => {
+    const data = leadsExport ?? [];
+    if (data.length === 0) { alert("Nenhum lead para exportar"); return; }
+    const headers = ["Nome", "E-mail", "WhatsApp", "Link WhatsApp", "Resultado", "Status CRM", "Data Sessão", "Notas", "Cadastrado em"];
+    const rows = data.map((l: any) => {
+      const num = l.whatsapp?.replace(/\D/g, "");
+      return [
+        l.nome,
+        l.email,
+        l.whatsapp,
+        `https://wa.me/55${num}`,
+        l.resultadoModelo ?? "Pendente",
+        PIPELINE.find((s) => s.id === l.crmStatus)?.label ?? l.crmStatus,
+        l.dataSessao ?? "",
+        (l.notas ?? "").replace(/,/g, ";"),
+        new Date(l.createdAt).toLocaleString("pt-BR"),
+      ];
+    });
+    const csv = [headers.join(","), ...rows.map((r: any[]) => r.map((v) => `"${v}"`).join(","))].join("\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" }));
+    link.download = `leads_quiz_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+  };
+
+  // Métricas
   const total = (leads ?? []).length;
   const emContato = (leads ?? []).filter((l: any) => l.crmStatus === "em_contato").length;
   const sessoes = (leads ?? []).filter((l: any) => ["sessao_marcada", "sessao_realizada"].includes(l.crmStatus)).length;
   const compraram = (leads ?? []).filter((l: any) => l.crmStatus === "comprou").length;
 
   if (isLoading) return (
-    <div style={{ display: "flex", justifyContent: "center", padding: "48px" }}>
-      <Loader2 className="animate-spin" style={{ color: "#6b7280" }} />
+    <div style={{ display: "flex", justifyContent: "center", padding: "64px" }}>
+      <Loader2 className="animate-spin" style={{ color: NEON, width: 32, height: 32 }} />
     </div>
   );
 
   return (
     <div>
       {/* Métricas */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px", marginBottom: "24px" }}>
         {[
-          { label: "Total de leads", value: total, icon: <Users size={18} />, color: "#2563eb" },
-          { label: "Em contato", value: emContato, icon: <MessageCircle size={18} />, color: "#d97706" },
-          { label: "Sessões", value: sessoes, icon: <Calendar size={18} />, color: "#7c3aed" },
-          { label: "Compraram", value: compraram, icon: <CheckCircle size={18} />, color: "#16a34a" },
+          { label: "Total de leads", value: total, icon: <Users size={16} />, color: "#3b82f6" },
+          { label: "Em contato", value: emContato, icon: <MessageCircle size={16} />, color: "#f59e0b" },
+          { label: "Sessões", value: sessoes, icon: <Calendar size={16} />, color: "#a855f7" },
+          { label: "Compraram", value: compraram, icon: <CheckCircle size={16} />, color: NEON },
         ].map((m) => (
-          <div key={m.label} style={{
-            background: "#fff", border: "1px solid #e5e7eb", borderRadius: "10px",
-            padding: "16px", display: "flex", flexDirection: "column", gap: "6px",
-          }}>
-            <div style={{ color: m.color }}>{m.icon}</div>
-            <p style={{ fontSize: "24px", fontWeight: 800, color: "#111", margin: 0 }}>{m.value}</p>
-            <p style={{ fontSize: "12px", color: "#6b7280", margin: 0 }}>{m.label}</p>
+          <div key={m.label} style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "10px", padding: "14px" }}>
+            <div style={{ color: m.color, marginBottom: "6px" }}>{m.icon}</div>
+            <p style={{ fontSize: "26px", fontWeight: 800, color: m.color, margin: 0 }}>{m.value}</p>
+            <p style={{ fontSize: "11px", color: MUTED, margin: 0 }}>{m.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Filtros */}
-      <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+      {/* Barra de ações */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
         <input
           type="text"
           placeholder="Buscar por nome, e-mail ou WhatsApp..."
@@ -313,35 +416,45 @@ function CrmTab() {
           onChange={(e) => setBusca(e.target.value)}
           style={{
             flex: 1, minWidth: "200px", padding: "9px 14px", borderRadius: "8px",
-            border: "1px solid #d1d5db", fontSize: "13px",
+            border: "1px solid rgba(57,255,20,0.2)", fontSize: "13px",
+            background: "rgba(0,0,0,0.4)", color: TEXT,
           }}
         />
-        <select
-          value={filtroStatus}
-          onChange={(e) => setFiltroStatus(e.target.value)}
-          style={{
-            padding: "9px 14px", borderRadius: "8px", border: "1px solid #d1d5db",
-            fontSize: "13px", background: "#fff", cursor: "pointer",
-          }}
-        >
-          <option value="todos">Todos os status</option>
-          {Object.entries(crmStatusConfig).map(([k, v]) => (
-            <option key={k} value={k}>{v.label}</option>
-          ))}
-        </select>
+        <button onClick={exportCSV} style={{
+          display: "flex", alignItems: "center", gap: "6px",
+          background: NEON, color: "#000", border: "none", borderRadius: "8px",
+          padding: "9px 16px", fontSize: "13px", fontWeight: 800, cursor: "pointer",
+        }}>
+          <Download size={14} /> Exportar CSV
+        </button>
       </div>
 
-      {/* Lista */}
-      {leadsFiltrados.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "48px", color: "#9ca3af" }}>
-          <Users size={40} style={{ margin: "0 auto 12px", opacity: 0.4 }} />
-          <p style={{ fontSize: "15px" }}>Nenhum lead encontrado</p>
+      {/* Kanban */}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "16px" }}>
+          {PIPELINE.map((stage) => (
+            <KanbanColumn
+              key={stage.id}
+              stage={stage}
+              leads={leadsByStatus(stage.id)}
+              onRefresh={refetch}
+            />
+          ))}
         </div>
-      ) : (
-        leadsFiltrados.map((lead: any) => (
-          <CrmRow key={lead.id} lead={lead} onRefresh={refetch} />
-        ))
-      )}
+
+        <DragOverlay>
+          {activeCard ? (
+            <div style={{ opacity: 0.9, transform: "rotate(2deg)" }}>
+              <LeadCard lead={activeCard} onRefresh={() => {}} isDragging />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
@@ -350,12 +463,12 @@ function CrmTab() {
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const [aba, setAba] = useState<"analytics" | "crm">("analytics");
+  const [aba, setAba] = useState<"analytics" | "crm">("crm");
 
   const { data: analytics, isLoading, error } = trpc.quiz.getAnalytics.useQuery();
   const { data: detailedData } = trpc.quiz.getDetailedData.useQuery();
 
-  const exportToCSV = () => {
+  const exportAnalyticsCSV = () => {
     if (!detailedData || detailedData.length === 0) { alert("Nenhum dado disponível"); return; }
     const headers = ["Session ID", "Modelo Predominante", "SLG", "PLG", "MLG", "FLG", "Data/Hora"];
     const rows = detailedData.map((item: any) => [
@@ -366,7 +479,7 @@ export default function Dashboard() {
     const csv = [headers.join(","), ...rows.map((r: any[]) => r.join(","))].join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
-    link.download = `quiz_results_${new Date().toISOString().split("T")[0]}.csv`;
+    link.download = `analytics_quiz_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
   };
 
@@ -386,41 +499,43 @@ export default function Dashboard() {
 
   const pieData = analytics
     ? Object.entries(analytics.modelDistribution).map(([key, value]) => ({
-        name: modelNames[key], value, color: COLORS[key as keyof typeof COLORS],
+        name: MODEL_NAMES[key], value, color: MODEL_COLORS[key],
       }))
     : [];
 
   const barData = analytics
     ? Object.entries(analytics.modelDistribution).map(([key, value]) => ({
-        model: modelNames[key], respostas: value,
+        model: MODEL_NAMES[key], respostas: value,
       }))
     : [];
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", padding: "32px 16px" }}>
-      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+    <div style={{ minHeight: "100vh", background: BG, padding: "28px 16px", fontFamily: "'Inter', sans-serif" }}>
+      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
           <div>
-            <h1 style={{ color: "#fff", fontSize: "clamp(20px, 4vw, 28px)", fontWeight: 800, margin: 0 }}>
-              LED GROWTH <span style={{ color: "#39ff14" }}>MODELS</span>
+            <p style={{ color: NEON, fontSize: "11px", fontWeight: 700, letterSpacing: "0.15em", margin: "0 0 4px" }}>
+              PAINEL DE CONTROLE
+            </p>
+            <h1 style={{ color: "#fff", fontSize: "clamp(20px, 4vw, 26px)", fontWeight: 900, margin: 0, letterSpacing: "-0.02em" }}>
+              LED GROWTH <span style={{ color: NEON }}>MODELS</span>
             </h1>
-            <p style={{ color: "#94a3b8", fontSize: "13px", margin: "4px 0 0" }}>Painel de controle</p>
           </div>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "10px" }}>
             {aba === "analytics" && (
-              <button onClick={exportToCSV} style={{
+              <button onClick={exportAnalyticsCSV} style={{
                 display: "flex", alignItems: "center", gap: "6px",
-                background: "#16a34a", color: "#fff", border: "none", borderRadius: "8px",
-                padding: "9px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer",
+                background: "rgba(57,255,20,0.15)", color: NEON, border: `1px solid ${NEON}44`,
+                borderRadius: "8px", padding: "9px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer",
               }}>
                 <Download size={14} /> Exportar CSV
               </button>
             )}
             <button onClick={() => setLocation("/")} style={{
               display: "flex", alignItems: "center", gap: "6px",
-              background: "rgba(255,255,255,0.1)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)",
+              background: "rgba(255,255,255,0.06)", color: TEXT, border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: "8px", padding: "9px 16px", fontSize: "13px", fontWeight: 700, cursor: "pointer",
             }}>
               <ArrowLeft size={14} /> Voltar ao Quiz
@@ -429,10 +544,10 @@ export default function Dashboard() {
         </div>
 
         {/* Abas */}
-        <div style={{ display: "flex", gap: "4px", marginBottom: "24px", background: "rgba(255,255,255,0.06)", borderRadius: "10px", padding: "4px", width: "fit-content" }}>
+        <div style={{ display: "flex", gap: "4px", marginBottom: "28px", background: "rgba(255,255,255,0.04)", borderRadius: "10px", padding: "4px", width: "fit-content" }}>
           {[
-            { id: "analytics", label: "Analytics", icon: <BarChart3 size={15} /> },
-            { id: "crm", label: "CRM de Leads", icon: <Users size={15} /> },
+            { id: "crm", label: "CRM de Leads", icon: <Users size={14} /> },
+            { id: "analytics", label: "Analytics", icon: <BarChart3 size={14} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -440,9 +555,9 @@ export default function Dashboard() {
               style={{
                 display: "flex", alignItems: "center", gap: "6px",
                 padding: "8px 20px", borderRadius: "7px", border: "none",
-                background: aba === tab.id ? "#fff" : "transparent",
-                color: aba === tab.id ? "#111" : "#94a3b8",
-                fontWeight: aba === tab.id ? 700 : 500,
+                background: aba === tab.id ? NEON : "transparent",
+                color: aba === tab.id ? "#000" : MUTED,
+                fontWeight: aba === tab.id ? 800 : 500,
                 fontSize: "13px", cursor: "pointer", transition: "all 0.15s",
               }}
             >
@@ -451,104 +566,90 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Conteúdo das abas */}
+        {/* Conteúdo */}
         {aba === "crm" ? (
-          <CrmTab />
+          <CrmKanban />
         ) : (
           <>
             {isLoading ? (
               <div style={{ display: "flex", justifyContent: "center", padding: "64px" }}>
-                <Loader2 className="animate-spin" style={{ color: "#94a3b8", width: 32, height: 32 }} />
+                <Loader2 className="animate-spin" style={{ color: NEON, width: 32, height: 32 }} />
               </div>
             ) : error ? (
-              <Card className="bg-white p-8">
-                <p className="text-red-600">Erro ao carregar analytics: {error.message}</p>
-              </Card>
+              <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "12px", padding: "24px" }}>
+                <p style={{ color: "#ef4444" }}>Erro ao carregar analytics: {error.message}</p>
+              </div>
             ) : analytics ? (
               <>
                 {/* Stats */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "24px" }}>
-                  <Card className="bg-white p-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <BarChart3 className="w-5 h-5 text-blue-600" />
-                      <h3 className="text-base font-semibold">Total de Quizzes</h3>
+                  {[
+                    { label: "Total de Quizzes", value: analytics.totalQuizzes, sub: "Completados", icon: <BarChart3 size={18} />, color: "#3b82f6" },
+                    { label: "Taxa de Conclusão", value: `${analytics.completionRate}%`, sub: "Dos iniciados", icon: <TrendingUp size={18} />, color: NEON },
+                    { label: "Modelo Predominante", value: predominant.model, sub: `${predominant.count} respostas`, icon: <div style={{ width: 18, height: 18, borderRadius: "4px", background: MODEL_COLORS[predominant.model] }} />, color: MODEL_COLORS[predominant.model] },
+                  ].map((s) => (
+                    <div key={s.label} style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "12px", padding: "20px" }}>
+                      <div style={{ color: s.color, marginBottom: "8px" }}>{s.icon}</div>
+                      <p style={{ fontSize: "28px", fontWeight: 900, color: s.color, margin: "0 0 4px" }}>{s.value}</p>
+                      <p style={{ fontSize: "12px", color: MUTED, margin: 0 }}>{s.sub}</p>
+                      <p style={{ fontSize: "11px", color: MUTED, margin: "2px 0 0", opacity: 0.7 }}>{s.label}</p>
                     </div>
-                    <p className="text-4xl font-bold text-blue-600">{analytics.totalQuizzes}</p>
-                    <p className="text-sm text-gray-500 mt-1">Completados</p>
-                  </Card>
-                  <Card className="bg-white p-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <TrendingUp className="w-5 h-5 text-green-600" />
-                      <h3 className="text-base font-semibold">Taxa de Conclusão</h3>
-                    </div>
-                    <p className="text-4xl font-bold text-green-600">{analytics.completionRate}%</p>
-                    <p className="text-sm text-gray-500 mt-1">Dos iniciados</p>
-                  </Card>
-                  <Card className="bg-white p-6">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-5 h-5 rounded" style={{ backgroundColor: COLORS[predominant.model as keyof typeof COLORS] }} />
-                      <h3 className="text-base font-semibold">Modelo Predominante</h3>
-                    </div>
-                    <p className="text-xl font-bold" style={{ color: COLORS[predominant.model as keyof typeof COLORS] }}>
-                      {modelNames[predominant.model]}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-1">{predominant.count} respostas</p>
-                  </Card>
+                  ))}
                 </div>
 
                 {/* Gráficos */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "14px", marginBottom: "24px" }}>
-                  <Card className="bg-white p-6">
-                    <h3 className="text-lg font-bold mb-4">Distribuição de Modelos</h3>
-                    <ResponsiveContainer width="100%" height={280}>
+                  <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "12px", padding: "20px" }}>
+                    <h3 style={{ color: TEXT, fontWeight: 700, fontSize: "14px", marginBottom: "16px" }}>Distribuição de Modelos</h3>
+                    <ResponsiveContainer width="100%" height={260}>
                       <PieChart>
                         <Pie data={pieData} cx="50%" cy="50%" labelLine={false}
                           label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                           outerRadius={80} dataKey="value">
                           {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                         </Pie>
-                        <Tooltip />
+                        <Tooltip contentStyle={{ background: "#0d2b14", border: `1px solid ${NEON}33`, color: TEXT }} />
                       </PieChart>
                     </ResponsiveContainer>
-                  </Card>
-                  <Card className="bg-white p-6">
-                    <h3 className="text-lg font-bold mb-4">Respostas por Modelo</h3>
-                    <ResponsiveContainer width="100%" height={280}>
+                  </div>
+                  <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "12px", padding: "20px" }}>
+                    <h3 style={{ color: TEXT, fontWeight: 700, fontSize: "14px", marginBottom: "16px" }}>Respostas por Modelo</h3>
+                    <ResponsiveContainer width="100%" height={260}>
                       <BarChart data={barData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="model" angle={-30} textAnchor="end" height={80} tick={{ fontSize: 11 }} />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="respostas" fill="#3b82f6" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(57,255,20,0.1)" />
+                        <XAxis dataKey="model" angle={-30} textAnchor="end" height={80} tick={{ fontSize: 10, fill: MUTED }} />
+                        <YAxis tick={{ fontSize: 10, fill: MUTED }} />
+                        <Tooltip contentStyle={{ background: "#0d2b14", border: `1px solid ${NEON}33`, color: TEXT }} />
+                        <Legend wrapperStyle={{ color: MUTED, fontSize: "12px" }} />
+                        <Bar dataKey="respostas" fill={NEON} radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
-                  </Card>
+                  </div>
                 </div>
 
                 {/* Detalhamento */}
-                <Card className="bg-white p-6">
-                  <h3 className="text-lg font-bold mb-4">Detalhamento por Modelo</h3>
-                  <div className="space-y-4">
+                <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "12px", padding: "20px" }}>
+                  <h3 style={{ color: TEXT, fontWeight: 700, fontSize: "14px", marginBottom: "16px" }}>Detalhamento por Modelo</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                     {Object.entries(analytics.modelDistribution).map(([key, value]) => {
                       const pct = totalResponses > 0 ? ((value / totalResponses) * 100).toFixed(1) : 0;
                       return (
-                        <div key={key} className="flex items-center gap-4">
-                          <div className="w-4 h-4 rounded" style={{ backgroundColor: COLORS[key as keyof typeof COLORS] }} />
-                          <div className="flex-1">
-                            <div className="flex justify-between mb-1">
-                              <span className="font-medium text-sm">{modelNames[key]}</span>
-                              <span className="text-gray-500 text-sm">{value} respostas ({pct}%)</span>
+                        <div key={key} style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                          <div style={{ width: 12, height: 12, borderRadius: "3px", background: MODEL_COLORS[key], flexShrink: 0 }} />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                              <span style={{ fontWeight: 600, fontSize: "13px", color: TEXT }}>{MODEL_NAMES[key]}</span>
+                              <span style={{ fontSize: "12px", color: MUTED }}>{value} respostas ({pct}%)</span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div className="h-2 rounded-full" style={{ width: `${pct}%`, backgroundColor: COLORS[key as keyof typeof COLORS] }} />
+                            <div style={{ width: "100%", background: "rgba(255,255,255,0.08)", borderRadius: "99px", height: "6px" }}>
+                              <div style={{ width: `${pct}%`, background: MODEL_COLORS[key], borderRadius: "99px", height: "6px" }} />
                             </div>
                           </div>
                         </div>
                       );
                     })}
                   </div>
-                </Card>
+                </div>
               </>
             ) : null}
           </>
