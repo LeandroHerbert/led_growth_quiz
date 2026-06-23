@@ -101,3 +101,32 @@ export const quizLeads = mysqlTable("quiz_leads", {
 export type QuizLead = typeof quizLeads.$inferSelect;
 export type InsertQuizLead = typeof quizLeads.$inferInsert;
 export type QuizLeadCrmStatus = QuizLead["crmStatus"];
+
+/**
+ * Agendamentos de sessões estratégicas
+ * Criados via página /agendar — integração com Google Calendar
+ */
+export const agendamentos = mysqlTable("agendamentos", {
+  id: int("id").autoincrement().primaryKey(),
+  nome: varchar("nome", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  whatsapp: varchar("whatsapp", { length: 20 }).notNull(),
+  empresa: varchar("empresa", { length: 255 }),
+  /** Data/hora do agendamento em UTC timestamp (ms) */
+  dataHora: varchar("data_hora", { length: 30 }).notNull(),
+  /** Duração em minutos */
+  duracao: int("duracao").default(30).notNull(),
+  /** Status do agendamento */
+  status: mysqlEnum("status", ["pendente", "confirmado", "cancelado", "realizado"]).default("pendente").notNull(),
+  /** ID do evento no Google Calendar (preenchido após criação) */
+  googleEventId: varchar("google_event_id", { length: 255 }),
+  /** Link da reunião (Google Meet) */
+  meetLink: varchar("meet_link", { length: 500 }),
+  /** Notas internas */
+  notas: text("notas"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Agendamento = typeof agendamentos.$inferSelect;
+export type InsertAgendamento = typeof agendamentos.$inferInsert;
