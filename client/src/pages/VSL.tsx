@@ -36,11 +36,18 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
   const [completed, setCompleted] = useState(false);
   const unlockedRef = useRef(false);
 
-  // Formata segundos em M:SS
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    return `${m}:${s.toString().padStart(2, "0")}`;
+  // Progresso visual acelerado:
+  // - Até 50% real do vídeo: barra anda 3x mais rápido (máx 75% visual)
+  // - Acima de 50% real: barra desacelera gradualmente até acompanhar o real
+  const visualProgress = (realPct: number): number => {
+    if (realPct <= 50) {
+      // 3x mais rápido, mas capped em 75%
+      return Math.min(realPct * 3, 75);
+    } else {
+      // Interpola de 75% (visual) até 100% (visual) conforme real vai de 50% a 100%
+      const t = (realPct - 50) / 50; // 0..1
+      return 75 + t * 25;
+    }
   };
 
   const unlock = () => {
@@ -58,10 +65,9 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
         const cur = player.getCurrentTime?.() ?? 0;
         const dur = player.getDuration?.() ?? 0;
         if (dur > 0) {
-          const pct = (cur / dur) * 100;
-          setProgress(pct);
-
-          if (pct >= 99.5) unlock();
+          const realPct = (cur / dur) * 100;
+          setProgress(visualProgress(realPct));
+          if (realPct >= 99.5) unlock();
         }
       } catch (_) {}
     }, 500);
@@ -95,6 +101,9 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
           fs: 0,
           iv_load_policy: 3,
           playsinline: 1,
+          showinfo: 0,
+          color: "white",
+          branding: 0,
         },
         events: {
           onStateChange: (e: any) => {
@@ -163,6 +172,17 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
           }}
         />
 
+        {/* Overlay preto que cobre thumbnail, logo e título do YouTube (visível antes do play) */}
+        {!isPlaying && (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 11,
+            background: "#000",
+            pointerEvents: "none",
+          }} />
+        )}
+
         {/* Ícone de play centralizado quando pausado */}
         {!isPlaying && !completed && (
           <div
@@ -170,11 +190,10 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
             style={{
               position: "absolute",
               inset: 0,
-              zIndex: 11,
+              zIndex: 12,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "rgba(0,0,0,0.30)",
               cursor: "pointer",
               pointerEvents: "none",
             }}
