@@ -309,14 +309,34 @@ export default function Agendar() {
 
   function buildGCalLink() {
     if (!slotSelecionadoObj) return "#";
-    // Converter dataHora ISO para formato YYYYMMDDTHHmmssZ
+    // O servidor gera os slots com setHours() em UTC, mas os horários exibidos
+    // (ex: "08:00") representam o horário de Brasília (UTC-3).
+    // Para o Google Agenda, usamos formato local sem 'Z' (sem indicador de UTC)
+    // para que o evento seja criado no horário local do usuário.
+    // Montamos a string de data/hora diretamente a partir do que está exibido.
     const inicio = new Date(slotSelecionadoObj.dataHora);
     const fim = new Date(inicio.getTime() + 30 * 60 * 1000); // +30 min
-    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+
+    // Formatar como YYYYMMDDTHHMMSS (sem Z) usando o horário UTC do objeto,
+    // que corresponde ao horário local de Brasília exibido na tela
+    const fmtLocal = (d: Date) => {
+      const pad = (n: number) => String(n).padStart(2, "0");
+      return (
+        d.getUTCFullYear().toString() +
+        pad(d.getUTCMonth() + 1) +
+        pad(d.getUTCDate()) +
+        "T" +
+        pad(d.getUTCHours()) +
+        pad(d.getUTCMinutes()) +
+        "00"
+      );
+    };
+
     const params = new URLSearchParams({
       action: "TEMPLATE",
       text: "Sessão Estratégica — LED Growth Models",
-      dates: `${fmt(inicio)}/${fmt(fim)}`,
+      dates: `${fmtLocal(inicio)}/${fmtLocal(fim)}`,
+      ctz: "America/Sao_Paulo",
       details: `Sua sessão estratégica está confirmada!\n\nNome: ${form.nome}\nE-mail: ${form.email}\n\nPrepare-se para uma conversa direta sobre o motor de crescimento do seu negócio.`,
       location: "Online (link será enviado por e-mail)",
     });
