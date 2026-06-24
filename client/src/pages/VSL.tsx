@@ -20,7 +20,9 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 
 export default function VSL() {
   const handleCTA = () => {
-    window.open("https://profplay.com.br/evento/led-growth-models-53-57-95", "_blank");
+    const phone = "5561992141518";
+    const msg = encodeURIComponent("Quero entrar para a Altum.");
+    window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
   };
 
   return (
@@ -165,24 +167,16 @@ export default function VSL() {
         <FadeIn delay={600}>
           <div className="divider-line" />
           <p style={{
-            fontSize: "clamp(16px, 2vw, 20px)",
+            fontSize: "clamp(17px, 2.2vw, 22px)",
             color: "#ffffff",
-            lineHeight: 1.75,
-            margin: "0 0 16px",
+            lineHeight: 1.7,
+            margin: "0 0 40px",
             fontWeight: 600,
           }}>
-            Energia na direção errada não é só desperdício — é prejuízo.
-          </p>
-          <p style={{
-            fontSize: "clamp(14px, 1.6vw, 17px)",
-            color: "#cccccc",
-            lineHeight: 1.8,
-            margin: "0 0 40px",
-          }}>
-            No evento presencial <strong style={{ color: "#fff" }}>LED Growth Models</strong>,
-            você vai identificar o motor real do seu negócio, entender por que certas
-            estratégias não funcionam para você — e sair com clareza sobre onde concentrar
-            energia para crescer com menos desperdício e mais resultado.
+            Agora que você entendeu as estruturas de crescimento ordenado, clique no botão
+            abaixo e faça parte do{" "}
+            <span style={{ color: "#39ff14" }}>Ecossistema Altum</span>{" "}
+            — e continue acelerando seu crescimento.
           </p>
         </FadeIn>
 
@@ -209,12 +203,12 @@ export default function VSL() {
               justifyContent: "center",
             }}
           >
-            Quero minha vaga gratuita
+            Quero entrar para a Altum
             <ArrowRight size={18} />
           </button>
 
           <p style={{ color: "#666", fontSize: "13px", marginTop: "14px" }}>
-            25 de junho · 14h · Espaço RC, Bonaparte Hotel — Brasília · Apenas 30 vagas
+            Resposta rápida · WhatsApp direto com Leandro Herbert
           </p>
         </FadeIn>
       </section>
