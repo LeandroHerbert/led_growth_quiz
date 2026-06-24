@@ -247,6 +247,16 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
 // ── Página principal ──────────────────────────────────────────────────────────
 export default function VSL() {
   const [unlocked, setUnlocked] = useState(false);
+  const spotlightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!spotlightRef.current) return;
+      spotlightRef.current.style.background = `radial-gradient(600px circle at ${e.clientX}px ${e.clientY}px, rgba(57,255,20,0.06) 0%, transparent 70%)`;
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   const handleCTA = () => {
     const phone = "5561992141518";
@@ -262,8 +272,20 @@ export default function VSL() {
         fontFamily: "'Space Grotesk', 'Inter', sans-serif",
         color: "#ffffff",
         overflowX: "hidden",
+        position: "relative",
       }}
     >
+      {/* Spotlight verde que acompanha o mouse */}
+      <div
+        ref={spotlightRef}
+        style={{
+          position: "fixed",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 0,
+          transition: "background 0.1s ease",
+        }}
+      />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap');
 
