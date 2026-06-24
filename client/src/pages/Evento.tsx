@@ -415,7 +415,7 @@ export default function Evento() {
               O que acontece no evento
             </p>
             <h2 style={{ fontSize: "clamp(24px, 3vw, 36px)", fontWeight: 800, margin: "0 0 8px", color: "#fff" }}>
-              Três horas de conversa densa, sem enrolação.
+              Um encontro de prática, que vira ponteiro no seu negócio.
             </h2>
             <p style={{ color: "#dddddd", fontSize: "15px", margin: "0 0 40px" }}>
               Um grupo de 30 empresários. Ambiente fechado. Conteúdo que você não encontra em curso.
@@ -444,7 +444,7 @@ export default function Evento() {
               },
               {
                 num: "04",
-                titulo: "Você sai com clareza, não com tarefas",
+                titulo: "Você sai com clareza",
                 desc: "A saída não é uma lista de ações genéricas. É entender onde concentrar energia para crescer com menos desperdício.",
                 delay: 300,
               },
