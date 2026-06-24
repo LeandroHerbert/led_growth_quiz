@@ -172,13 +172,15 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
           }}
         />
 
-        {/* Overlay preto que cobre thumbnail, logo e título do YouTube (visível antes do play) */}
+        {/* Thumbnail customizada como capa do player antes do play */}
         {!isPlaying && (
           <div style={{
             position: "absolute",
             inset: 0,
             zIndex: 11,
-            background: "#000",
+            backgroundImage: "url('https://manus-webdev-static-assets.s3.us-east-1.amazonaws.com/manus-storage/thumbnail_vsl_3348bace.png')",
+            backgroundSize: "cover",
+            backgroundPosition: "center top",
             pointerEvents: "none",
           }} />
         )}
