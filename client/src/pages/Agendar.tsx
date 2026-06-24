@@ -268,6 +268,26 @@ export default function Agendar() {
       display: block;
       margin: 0 auto;
     }
+    .gcal-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: #fff;
+      color: #1a1a1a;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 14px;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 16px;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .gcal-btn:hover { background: #f0f0f0; }
+    .gcal-btn svg { flex-shrink: 0; }
     .step-indicator {
       display: flex;
       align-items: center;
@@ -286,6 +306,22 @@ export default function Agendar() {
   `;
 
   const slotSelecionadoObj = slots?.find(s => s.dataHora === slotSelecionado);
+
+  function buildGCalLink() {
+    if (!slotSelecionadoObj) return "#";
+    // Converter dataHora ISO para formato YYYYMMDDTHHmmssZ
+    const inicio = new Date(slotSelecionadoObj.dataHora);
+    const fim = new Date(inicio.getTime() + 30 * 60 * 1000); // +30 min
+    const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: "Sessão Estratégica — LED Growth Models",
+      dates: `${fmt(inicio)}/${fmt(fim)}`,
+      details: `Sua sessão estratégica está confirmada!\n\nNome: ${form.nome}\nE-mail: ${form.email}\n\nPrepare-se para uma conversa direta sobre o motor de crescimento do seu negócio.`,
+      location: "Online (link será enviado por e-mail)",
+    });
+    return `https://calendar.google.com/calendar/render?${params.toString()}`;
+  }
 
   return (
     <>
@@ -439,6 +475,24 @@ export default function Agendar() {
                 <br /><br />
                 Prepare-se para uma conversa direta sobre o motor de crescimento do seu negócio.
               </p>
+              <a
+                href={buildGCalLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="gcal-btn"
+              >
+                <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="4" y="8" width="40" height="36" rx="3" fill="#fff" stroke="#ddd" strokeWidth="2"/>
+                  <rect x="4" y="8" width="40" height="10" rx="3" fill="#4285F4"/>
+                  <rect x="4" y="14" width="40" height="4" fill="#4285F4"/>
+                  <circle cx="14" cy="6" r="3" fill="#4285F4"/>
+                  <circle cx="34" cy="6" r="3" fill="#4285F4"/>
+                  <rect x="14" y="3" width="2" height="6" rx="1" fill="#4285F4"/>
+                  <rect x="32" y="3" width="2" height="6" rx="1" fill="#4285F4"/>
+                  <text x="24" y="36" textAnchor="middle" fontSize="14" fontWeight="bold" fill="#4285F4">G</text>
+                </svg>
+                Adicionar ao Google Agenda
+              </a>
               <button className="back-btn" onClick={() => window.location.href = "/"}>
                 Voltar ao diagnóstico
               </button>
