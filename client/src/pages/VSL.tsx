@@ -32,7 +32,7 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);      // 0–100
-  const [timeLeft, setTimeLeft] = useState<string | null>(null);
+
   const [completed, setCompleted] = useState(false);
   const unlockedRef = useRef(false);
 
@@ -60,8 +60,7 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
         if (dur > 0) {
           const pct = (cur / dur) * 100;
           setProgress(pct);
-          const remaining = dur - cur;
-          setTimeLeft(remaining > 0 ? formatTime(remaining) : "0:00");
+
           if (pct >= 99.5) unlock();
         }
       } catch (_) {}
@@ -214,24 +213,10 @@ function YouTubeGatePlayer({ onUnlock }: { onUnlock: () => void }) {
         }} />
       </div>
 
-      {/* Texto de tempo restante / concluído */}
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginTop: "6px",
-        padding: "0 2px",
-      }}>
-        <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)" }}>
-          {completed ? "✓ Vídeo concluído" : isPlaying ? "Assistindo..." : "Clique para assistir"}
-        </span>
-        {!completed && timeLeft && (
-          <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)", fontVariantNumeric: "tabular-nums" }}>
-            {timeLeft} restante
-          </span>
-        )}
+      {/* Texto de status */}
+      <div style={{ marginTop: "6px", padding: "0 2px", textAlign: "right" }}>
         {completed && (
-          <span style={{ fontSize: "11px", color: "#39ff14", fontWeight: 700 }}>✓</span>
+          <span style={{ fontSize: "11px", color: "#39ff14", fontWeight: 700 }}>✓ Vídeo concluído</span>
         )}
       </div>
     </div>
