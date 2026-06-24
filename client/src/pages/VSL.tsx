@@ -316,7 +316,7 @@ export default function VSL() {
       </div>
 
       {/* ── HEADLINE ── */}
-      <section style={{ maxWidth: "680px", margin: "0 auto", padding: "32px 32px 0", textAlign: "center" }}>
+      <section style={{ maxWidth: "820px", margin: "0 auto", padding: "32px 40px 0", textAlign: "center" }}>
         <FadeIn delay={100}>
           <h1 style={{
             fontSize: "clamp(28px, 5vw, 52px)",
@@ -326,9 +326,9 @@ export default function VSL() {
             margin: "0 0 20px",
             color: "#ffffff",
           }}>
-            Você está crescendo{" "}
-            <span style={{ color: "#39ff14" }}>com o motor errado</span>{" "}
-            — e nem sabe disso.
+            Você está crescendo{" "}
+            <span style={{ color: "#39ff14" }}>com o motor errado</span>{" "}
+            e provavelmente nem percebeu.
           </h1>
         </FadeIn>
 
@@ -338,13 +338,13 @@ export default function VSL() {
             color: "#dddddd",
             lineHeight: 1.7,
             margin: "0 0 28px",
-            maxWidth: "560px",
+            maxWidth: "680px",
             marginLeft: "auto",
             marginRight: "auto",
           }}>
             Cada negócio tem um modelo de crescimento que cabe melhor nele.
-            Quando você descobre o seu, tudo — pessoas, gestão, marketing e vendas —
-            passa a apontar para o mesmo lugar.
+            Quando você descobre o seu, pessoas, gestão, marketing e vendas
+            passam a apontar para o mesmo resultado.
           </p>
         </FadeIn>
 
@@ -404,7 +404,7 @@ export default function VSL() {
             }}
           />
           <span style={{ fontSize: "13px", color: "#ffaaaa", fontWeight: 600 }}>
-            Assista ao vídeo completo para liberar o conteúdo
+            Presente especial ao final do vídeo
           </span>
         </div>
       </div>
