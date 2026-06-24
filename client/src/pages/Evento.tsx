@@ -10,10 +10,10 @@ const EVENTO = {
   mesExtenso: "JUNHO",
   diaSemana: "QUINTA-FEIRA",
   horario: "14h",
-  local: "Solo Ristorante",
-  endereco: "403 Sul — Brasília",
+  local: "Espaço RC",
+  endereco: "Bonaparte Hotel — Setor Hoteleiro Sul, Brasília",
   vagas: 30,
-  linkCadastro: "#cadastro",
+  linkCadastro: "https://profplay.com.br/evento/led-growth-models-53-57-95",
 };
 // ============================================================
 
