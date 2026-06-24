@@ -19,6 +19,7 @@ import {
   BarChart3, TrendingUp, Loader2, Download, Users,
   MessageCircle, Calendar, CheckCircle, Phone, Trash2,
   StickyNote, ChevronDown, ArrowLeft, Clock, Building2, XCircle,
+  Video, Upload, Play, Star, AlertCircle,
 } from "lucide-react";
 import { useLocation } from "wouter";
 import {
@@ -673,11 +674,241 @@ function AbaAgendamentos() {
   );
 }
 
+// ── Aba Vídeos ───────────────────────────────────────────────────────────────
+
+function AbaVideos() {
+  const [titulo, setTitulo] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState("");
+  const [previewVideo, setPreviewVideo] = useState<string | null>(null);
+
+  const { data: lista, isLoading, refetch } = trpc.videos.listar.useQuery();
+  const salvar = trpc.videos.salvar.useMutation({ onSuccess: () => { refetch(); setTitulo(""); setUploadError(""); } });
+  const setAtivo = trpc.videos.setAtivo.useMutation({ onSuccess: () => refetch() });
+  const deletar = trpc.videos.deletar.useMutation({ onSuccess: () => refetch() });
+
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!titulo.trim()) { setUploadError("Digite um título para o vídeo antes de fazer o upload."); return; }
+    if (file.size > 500 * 1024 * 1024) { setUploadError("Arquivo muito grande. Máximo: 500MB."); return; }
+
+    setUploading(true);
+    setUploadError("");
+    setUploadProgress(0);
+
+    try {
+      const suffix = Math.random().toString(36).slice(2, 8);
+      const ext = file.name.split(".").pop() ?? "mp4";
+      const fileKey = `videos/${suffix}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+
+      // Upload via XMLHttpRequest para ter progresso
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const uploadUrl = `/api/video-upload?key=${encodeURIComponent(fileKey)}`;
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", uploadUrl);
+        xhr.upload.onprogress = (ev) => {
+          if (ev.lengthComputable) setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Upload falhou: ${xhr.status} ${xhr.responseText}`));
+        };
+        xhr.onerror = () => reject(new Error("Erro de rede durante o upload."));
+        xhr.send(formData);
+      });
+
+      // Montar URL pública via proxy
+      const publicUrl = `/manus-storage/${fileKey}`;
+
+      await salvar.mutateAsync({
+        titulo: titulo.trim(),
+        fileKey,
+        url: publicUrl,
+        mimeType: file.type || "video/mp4",
+        tamanho: file.size,
+        setAtivo: (lista ?? []).length === 0, // primeiro vídeo já fica ativo
+      });
+
+      setUploadProgress(100);
+    } catch (err: any) {
+      setUploadError(err.message ?? "Erro ao fazer upload.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const formatBytes = (bytes?: number | null) => {
+    if (!bytes) return "—";
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  if (isLoading) return (
+    <div style={{ display: "flex", justifyContent: "center", padding: "64px" }}>
+      <Loader2 className="animate-spin" style={{ color: NEON, width: 32, height: 32 }} />
+    </div>
+  );
+
+  return (
+    <div>
+      {/* Card de upload */}
+      <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "12px", padding: "24px", marginBottom: "24px" }}>
+        <p style={{ color: NEON, fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em", margin: "0 0 12px", textTransform: "uppercase" }}>Novo Vídeo</p>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div style={{ flex: 1, minWidth: "200px" }}>
+            <label style={{ display: "block", fontSize: "11px", color: MUTED, marginBottom: "6px", fontWeight: 600 }}>Título do vídeo</label>
+            <input
+              type="text"
+              placeholder="Ex: VSL LED Growth Models v2"
+              value={titulo}
+              onChange={(e) => setTitulo(e.target.value)}
+              disabled={uploading}
+              style={{
+                width: "100%", padding: "9px 14px", borderRadius: "8px",
+                border: "1px solid rgba(57,255,20,0.2)", fontSize: "13px",
+                background: "rgba(0,0,0,0.4)", color: TEXT, boxSizing: "border-box",
+              }}
+            />
+          </div>
+          <label style={{
+            display: "flex", alignItems: "center", gap: "8px",
+            background: uploading ? "rgba(57,255,20,0.3)" : NEON,
+            color: "#000", border: "none", borderRadius: "8px",
+            padding: "9px 20px", fontSize: "13px", fontWeight: 800,
+            cursor: uploading ? "not-allowed" : "pointer", whiteSpace: "nowrap",
+          }}>
+            {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+            {uploading ? `Enviando... ${uploadProgress}%` : "Selecionar arquivo"}
+            <input type="file" accept="video/*" onChange={handleUpload} disabled={uploading} style={{ display: "none" }} />
+          </label>
+        </div>
+        {uploading && (
+          <div style={{ marginTop: "12px" }}>
+            <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: "99px", height: "6px", overflow: "hidden" }}>
+              <div style={{ width: `${uploadProgress}%`, background: NEON, height: "6px", borderRadius: "99px", transition: "width 0.3s" }} />
+            </div>
+            <p style={{ fontSize: "11px", color: MUTED, margin: "6px 0 0" }}>{uploadProgress}% enviado</p>
+          </div>
+        )}
+        {uploadError && (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px", color: "#ef4444", fontSize: "13px" }}>
+            <AlertCircle size={14} /> {uploadError}
+          </div>
+        )}
+        <p style={{ fontSize: "11px", color: MUTED, margin: "12px 0 0" }}>Formatos aceitos: MP4, MOV, WebM · Máximo: 500MB</p>
+      </div>
+
+      {/* Lista de vídeos */}
+      {(lista ?? []).length === 0 ? (
+        <div style={{ background: CARD_BG, border: CARD_BORDER, borderRadius: "12px", padding: "48px", textAlign: "center" }}>
+          <Video size={32} style={{ color: MUTED, marginBottom: "12px" }} />
+          <p style={{ color: MUTED, fontSize: "14px", margin: 0 }}>Nenhum vídeo hospedado ainda. Faça o upload acima.</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {(lista ?? []).map((v: any) => (
+            <div key={v.id} style={{
+              background: v.ativo === "sim" ? "rgba(57,255,20,0.06)" : CARD_BG,
+              border: v.ativo === "sim" ? `1px solid ${NEON}55` : CARD_BORDER,
+              borderRadius: "12px", padding: "16px 20px",
+              display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap",
+            }}>
+              {/* Ícone */}
+              <div style={{
+                width: 44, height: 44, borderRadius: "10px", flexShrink: 0,
+                background: v.ativo === "sim" ? "rgba(57,255,20,0.15)" : "rgba(255,255,255,0.06)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Video size={20} style={{ color: v.ativo === "sim" ? NEON : MUTED }} />
+              </div>
+
+              {/* Info */}
+              <div style={{ flex: 1, minWidth: "140px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: TEXT }}>{v.titulo}</span>
+                  {v.ativo === "sim" && (
+                    <span style={{
+                      fontSize: "10px", fontWeight: 800, color: "#000",
+                      background: NEON, borderRadius: "4px", padding: "2px 7px", letterSpacing: "0.05em",
+                    }}>ATIVO NA VSL</span>
+                  )}
+                </div>
+                <p style={{ fontSize: "11px", color: MUTED, margin: 0 }}>
+                  {formatBytes(v.tamanho)} · {new Date(v.createdAt).toLocaleDateString("pt-BR")}
+                </p>
+              </div>
+
+              {/* Ações */}
+              <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                <button
+                  onClick={() => setPreviewVideo(previewVideo === v.url ? null : v.url)}
+                  title="Pré-visualizar"
+                  style={{
+                    display: "flex", alignItems: "center", gap: "5px",
+                    background: "rgba(255,255,255,0.06)", color: TEXT,
+                    border: "1px solid rgba(255,255,255,0.1)", borderRadius: "7px",
+                    padding: "7px 12px", fontSize: "12px", fontWeight: 600, cursor: "pointer",
+                  }}
+                >
+                  <Play size={12} /> Prévia
+                </button>
+                {v.ativo !== "sim" && (
+                  <button
+                    onClick={() => setAtivo.mutate({ id: v.id })}
+                    title="Usar na VSL"
+                    style={{
+                      display: "flex", alignItems: "center", gap: "5px",
+                      background: "rgba(57,255,20,0.15)", color: NEON,
+                      border: `1px solid ${NEON}44`, borderRadius: "7px",
+                      padding: "7px 12px", fontSize: "12px", fontWeight: 700, cursor: "pointer",
+                    }}
+                  >
+                    <Star size={12} /> Usar na VSL
+                  </button>
+                )}
+                <button
+                  onClick={() => { if (confirm(`Deletar "${v.titulo}"?`)) deletar.mutate({ id: v.id }); }}
+                  title="Deletar"
+                  style={{
+                    display: "flex", alignItems: "center",
+                    background: "rgba(239,68,68,0.1)", color: "#ef4444",
+                    border: "1px solid rgba(239,68,68,0.2)", borderRadius: "7px",
+                    padding: "7px 10px", fontSize: "12px", cursor: "pointer",
+                  }}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+
+              {/* Player de prévia */}
+              {previewVideo === v.url && (
+                <div style={{ width: "100%", marginTop: "12px" }}>
+                  <video
+                    src={v.url}
+                    controls
+                    style={{ width: "100%", maxWidth: "360px", borderRadius: "8px", background: "#000" }}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Dashboard principal ───────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
-  const [aba, setAba] = useState<"analytics" | "crm" | "agendamentos">("crm");
+  const [aba, setAba] = useState<"analytics" | "crm" | "agendamentos" | "videos">("crm");
 
   const { data: analytics, isLoading, error } = trpc.quiz.getAnalytics.useQuery();
   const { data: detailedData } = trpc.quiz.getDetailedData.useQuery();
@@ -762,6 +993,7 @@ export default function Dashboard() {
           {[
             { id: "crm",          label: "CRM de Leads",   icon: <Users size={14} /> },
             { id: "agendamentos", label: "Agendamentos",   icon: <Calendar size={14} /> },
+            { id: "videos",      label: "Vídeos",          icon: <Video size={14} /> },
             { id: "analytics",   label: "Analytics",      icon: <BarChart3 size={14} /> },
           ].map((tab) => (
             <button
@@ -786,6 +1018,8 @@ export default function Dashboard() {
           <CrmKanban />
         ) : aba === "agendamentos" ? (
           <AbaAgendamentos />
+        ) : aba === "videos" ? (
+          <AbaVideos />
         ) : (
           <>
             {isLoading ? (

@@ -8,6 +8,8 @@ import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import { storagePut } from "../storage";
+import multer from "multer";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -36,6 +38,22 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // Storage proxy for manus-storage assets
   registerStorageProxy(app);
+
+  // Rota de upload de vídeo — recebe multipart/form-data e faz PUT no S3
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 500 * 1024 * 1024 } });
+  app.post("/api/video-upload", upload.single("file"), async (req: any, res: any) => {
+    try {
+      const key = req.query.key as string;
+      if (!key) return res.status(400).json({ error: "key obrigatório" });
+      if (!req.file) return res.status(400).json({ error: "arquivo obrigatório" });
+      const { url } = await storagePut(key, req.file.buffer, req.file.mimetype || "video/mp4");
+      res.json({ success: true, url, key });
+    } catch (err: any) {
+      console.error("[video-upload]", err);
+      res.status(500).json({ error: err.message ?? "Erro no upload" });
+    }
+  });
+
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
   // tRPC API

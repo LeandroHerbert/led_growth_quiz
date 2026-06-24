@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
-import { ArrowRight, Play } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { ArrowRight, Play, Pause } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -18,7 +19,166 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
   return <div ref={ref}>{children}</div>;
 }
 
+// ── Player HTML5 customizado: só play/pause, sem barra de tempo ──────────────
+function VideoPlayer({ src, mimeType }: { src: string; mimeType?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  const toggle = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) {
+      v.play().catch(() => {});
+      setPlaying(true);
+    } else {
+      v.pause();
+      setPlaying(false);
+    }
+  }, []);
+
+  // Bloquear cliques na barra de progresso nativa via CSS pointer-events
+  // e esconder todos os controles do navegador via CSS
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        maxWidth: "360px",
+        margin: "0 auto",
+        border: "2px solid rgba(57,255,20,0.35)",
+        boxShadow: "0 0 48px rgba(57,255,20,0.12), 0 24px 64px rgba(0,0,0,0.6)",
+        background: "#000",
+        overflow: "hidden",
+        cursor: "pointer",
+      }}
+      onClick={toggle}
+    >
+      {/* Vídeo sem controles nativos */}
+      <video
+        ref={videoRef}
+        src={src}
+        playsInline
+        preload="metadata"
+        onCanPlay={() => setReady(true)}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+        style={{
+          display: "block",
+          width: "100%",
+          height: "640px",
+          objectFit: "cover",
+          pointerEvents: "none", // impede interação direta com o vídeo
+        }}
+      />
+
+      {/* Overlay de play/pause centralizado */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: playing ? "transparent" : "rgba(0,0,0,0.35)",
+          transition: "background 0.3s",
+        }}
+      >
+        {!playing && (
+          <div
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: "50%",
+              background: "#39ff14",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 0 40px rgba(57,255,20,0.6)",
+            }}
+          >
+            <Play size={28} color="#000" fill="#000" style={{ marginLeft: 4 }} />
+          </div>
+        )}
+      </div>
+
+      {/* Barra de controle inferior: só play/pause */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          padding: "12px 16px",
+          background: "linear-gradient(transparent, rgba(0,0,0,0.75))",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "12px",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={toggle}
+          disabled={!ready}
+          style={{
+            background: "rgba(57,255,20,0.15)",
+            border: "1px solid rgba(57,255,20,0.4)",
+            borderRadius: "50%",
+            width: 40,
+            height: 40,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: ready ? "pointer" : "default",
+            color: "#39ff14",
+          }}
+        >
+          {playing
+            ? <Pause size={16} fill="#39ff14" />
+            : <Play size={16} fill="#39ff14" style={{ marginLeft: 2 }} />
+          }
+        </button>
+        <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "11px" }}>
+          {playing ? "Pausar" : "Reproduzir"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Fallback: embed YouTube quando não há vídeo no S3 ────────────────────────
+function YouTubePlayer() {
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: "100%",
+        maxWidth: "360px",
+        margin: "0 auto",
+        border: "2px solid rgba(57,255,20,0.35)",
+        boxShadow: "0 0 48px rgba(57,255,20,0.12), 0 24px 64px rgba(0,0,0,0.6)",
+        background: "#000",
+        overflow: "hidden",
+      }}
+    >
+      <iframe
+        src="https://www.youtube.com/embed/aNUnHb95BBM?si=qHA3wKt2HNfOd810&controls=1&modestbranding=1&rel=0"
+        title="LED Growth Models — VSL"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+        style={{ display: "block", width: "100%", height: "640px", border: "none" }}
+      />
+    </div>
+  );
+}
+
+// ── Página principal ──────────────────────────────────────────────────────────
 export default function VSL() {
+  const { data: videoAtivo, isLoading: loadingVideo } = trpc.videos.getAtivo.useQuery();
+
   const handleCTA = () => {
     const phone = "5561992141518";
     const msg = encodeURIComponent("Quero entrar para a Altum.");
@@ -51,23 +211,6 @@ export default function VSL() {
           box-shadow: 0 0 64px rgba(57,255,20,0.75) !important;
         }
 
-        .vsl-video-wrap {
-          position: relative;
-          width: 100%;
-          max-width: 360px;
-          margin: 0 auto;
-          border: 2px solid rgba(57,255,20,0.35);
-          box-shadow: 0 0 48px rgba(57,255,20,0.12), 0 24px 64px rgba(0,0,0,0.6);
-          background: #000;
-          overflow: hidden;
-        }
-        .vsl-video-wrap iframe {
-          display: block;
-          width: 100%;
-          height: 640px;
-          border: none;
-        }
-
         .divider-line {
           width: 48px;
           height: 3px;
@@ -77,7 +220,6 @@ export default function VSL() {
 
         @media (max-width: 480px) {
           .vsl-video-wrap { max-width: 100%; }
-          .vsl-video-wrap iframe { height: 520px; }
         }
       `}</style>
 
@@ -150,15 +292,20 @@ export default function VSL() {
       {/* ── VÍDEO ── */}
       <section style={{ padding: "0 24px 56px" }}>
         <FadeIn delay={480}>
-          <div className="vsl-video-wrap">
-            <iframe
-              src="https://www.youtube.com/embed/aNUnHb95BBM?si=qHA3wKt2HNfOd810"
-              title="LED Growth Models — VSL"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          </div>
+          {loadingVideo ? (
+            <div style={{
+              width: "100%", maxWidth: "360px", height: "640px", margin: "0 auto",
+              background: "rgba(57,255,20,0.04)", border: "2px solid rgba(57,255,20,0.15)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <div style={{ width: 40, height: 40, border: "3px solid #39ff14", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+          ) : videoAtivo ? (
+            <VideoPlayer src={videoAtivo.url} mimeType={videoAtivo.mimeType} />
+          ) : (
+            <YouTubePlayer />
+          )}
         </FadeIn>
       </section>
 
@@ -216,7 +363,7 @@ export default function VSL() {
       {/* ── RODAPÉ ── */}
       <footer style={{ borderTop: "1px solid #1a1a1a", padding: "20px 24px", textAlign: "center" }}>
         <p style={{ color: "#333", fontSize: "11px", margin: 0, letterSpacing: "1px" }}>
-          LED GROWTH MODELS · EVENTO PRESENCIAL · BRASÍLIA
+          LED GROWTH MODELS · ECOSSISTEMA ALTUM
         </p>
       </footer>
     </div>

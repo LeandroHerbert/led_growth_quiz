@@ -130,3 +130,26 @@ export const agendamentos = mysqlTable("agendamentos", {
 
 export type Agendamento = typeof agendamentos.$inferSelect;
 export type InsertAgendamento = typeof agendamentos.$inferInsert;
+
+/**
+ * Vídeos hospedados no S3
+ * Gerenciados pelo painel de admin — player customizado na página /vsl
+ */
+export const videos = mysqlTable("videos", {
+  id: int("id").autoincrement().primaryKey(),
+  titulo: varchar("titulo", { length: 255 }).notNull(),
+  /** Chave do arquivo no S3 */
+  fileKey: varchar("file_key", { length: 500 }).notNull(),
+  /** URL pública do vídeo no S3 */
+  url: text("url").notNull(),
+  /** Tipo MIME do arquivo */
+  mimeType: varchar("mime_type", { length: 100 }).default("video/mp4").notNull(),
+  /** Tamanho em bytes */
+  tamanho: int("tamanho"),
+  /** Se este é o vídeo ativo exibido na /vsl */
+  ativo: mysqlEnum("ativo", ["sim", "nao"]).default("nao").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type Video = typeof videos.$inferSelect;
+export type InsertVideo = typeof videos.$inferInsert;

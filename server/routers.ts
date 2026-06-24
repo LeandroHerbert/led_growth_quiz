@@ -6,7 +6,7 @@ import { z } from "zod";
 import { saveQuizResponse, saveQuizCompletion, getQuizAnalytics, getDetailedQuizData, getQuizLeadsWithResults } from "./quizDb";
 import { notifyOwner } from "./_core/notification";
 import { getDb } from "./db";
-import { eventoLeads, quizLeads, agendamentos } from "../drizzle/schema";
+import { eventoLeads, quizLeads, agendamentos, videos } from "../drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
@@ -384,6 +384,72 @@ export const appRouter = router({
         if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
         await db.update(agendamentos).set({ status: input.status }).where(eq(agendamentos.id, input.id));
         return { success: true };
+      }),
+  }),
+
+  // ── VÍDEOS ──────────────────────────────────────────────────────────────
+  videos: router({
+    /** Retorna o vídeo ativo para a página /vsl (público) */
+    getAtivo: publicProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) return null;
+      const [video] = await db.select().from(videos).where(eq(videos.ativo, "sim")).limit(1);
+      return video ?? null;
+    }),
+
+    /** Lista todos os vídeos para o painel admin */
+    listar: publicProcedure.query(async () => {
+      const db = await getDb();
+      if (!db) return [];
+      return await db.select().from(videos).orderBy(desc(videos.createdAt));
+    }),
+
+    /** Define um vídeo como ativo na /vsl (desativa os outros) */
+    setAtivo: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
+        await db.update(videos).set({ ativo: "nao" });
+        await db.update(videos).set({ ativo: "sim" }).where(eq(videos.id, input.id));
+        return { success: true };
+      }),
+
+    /** Remove um vídeo */
+    deletar: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
+        await db.delete(videos).where(eq(videos.id, input.id));
+        return { success: true };
+      }),
+
+    /** Salva metadados do vídeo após upload (URL já gerada pelo frontend via storage proxy) */
+    salvar: publicProcedure
+      .input(z.object({
+        titulo: z.string().min(1),
+        fileKey: z.string(),
+        url: z.string().url(),
+        mimeType: z.string().default("video/mp4"),
+        tamanho: z.number().optional(),
+        setAtivo: z.boolean().default(false),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
+        if (input.setAtivo) {
+          await db.update(videos).set({ ativo: "nao" });
+        }
+        const [novo] = await db.insert(videos).values({
+          titulo: input.titulo,
+          fileKey: input.fileKey,
+          url: input.url,
+          mimeType: input.mimeType,
+          tamanho: input.tamanho,
+          ativo: input.setAtivo ? "sim" : "nao",
+        }).$returningId();
+        return { success: true, id: novo.id };
       }),
   }),
 });
