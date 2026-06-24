@@ -316,29 +316,29 @@ export default function VSL() {
       </div>
 
       {/* ── HEADLINE ── */}
-      <section style={{ maxWidth: "760px", margin: "0 auto", padding: "32px 24px 0", textAlign: "center" }}>
+      <section style={{ maxWidth: "680px", margin: "0 auto", padding: "32px 32px 0", textAlign: "center" }}>
         <FadeIn delay={100}>
           <h1 style={{
-            fontSize: "clamp(34px, 6vw, 68px)",
+            fontSize: "clamp(28px, 5vw, 52px)",
             fontWeight: 900,
-            lineHeight: 1.0,
-            letterSpacing: "-2px",
-            margin: "0 0 24px",
+            lineHeight: 1.15,
+            letterSpacing: "-1px",
+            margin: "0 0 20px",
             color: "#ffffff",
           }}>
-            Você está crescendo{" "}
-            <span style={{ color: "#39ff14" }}>com o motor errado</span>{" "}
+            Você está crescendo{" "}
+            <span style={{ color: "#39ff14" }}>com o motor errado</span>{" "}
             — e nem sabe disso.
           </h1>
         </FadeIn>
 
         <FadeIn delay={220}>
           <p style={{
-            fontSize: "clamp(16px, 2.2vw, 22px)",
+            fontSize: "clamp(15px, 2vw, 19px)",
             color: "#dddddd",
-            lineHeight: 1.65,
-            margin: "0 0 32px",
-            maxWidth: "580px",
+            lineHeight: 1.7,
+            margin: "0 0 28px",
+            maxWidth: "560px",
             marginLeft: "auto",
             marginRight: "auto",
           }}>
