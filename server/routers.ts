@@ -264,53 +264,90 @@ export const appRouter = router({
   }),
 
   agendamentos: router({
-    /** Retorna os slots disponíveis para segunda e terça da semana seguinte */
+    /** Retorna os slots disponíveis para 30/06 e 01/07 com horários específicos */
     slotsDisponiveis: publicProcedure.query(async () => {
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB indisponível" });
 
-      // Calcular segunda e terça da semana seguinte (horário de Brasília UTC-3)
-      const agora = new Date();
-      const diaSemana = agora.getDay(); // 0=dom, 1=seg, ...
-      const diasParaProximaSegunda = diaSemana === 0 ? 1 : (8 - diaSemana);
-      const proximaSegunda = new Date(agora);
-      proximaSegunda.setDate(agora.getDate() + diasParaProximaSegunda);
-      proximaSegunda.setHours(0, 0, 0, 0);
-      const proximaTerca = new Date(proximaSegunda);
-      proximaTerca.setDate(proximaSegunda.getDate() + 1);
-
-      // Buscar agendamentos já confirmados nessas datas
+      // Buscar agendamentos já confirmados
       const agendados = await db.select({ dataHora: agendamentos.dataHora })
         .from(agendamentos)
         .where(eq(agendamentos.status, "confirmado"));
       const horariosOcupados = new Set(agendados.map(a => a.dataHora));
 
-      // Gerar slots de 30 min: 08h-12h e 14h-17h
-      const slots: { dataHora: string; diaSemana: string; hora: string; disponivel: boolean }[] = [];
-      const periodos = [
-        { inicio: 8, fim: 12 },
-        { inicio: 14, fim: 17 },
+      // Dias e períodos fixos (horário de Brasília UTC-3)
+      const diasConfig = [
+        {
+          // 30/06/2026 — Segunda-feira
+          ano: 2026, mes: 5, dia: 30, // mes é 0-indexed
+          nome: "Segunda-feira, 30/06/2026",
+          periodos: [
+            { inicio: 8, fim: 12 },       // 08:00 às 11:30
+            { inicio: 15, fimH: 21, fimMin: 0 }, // 15:30 às 20:30
+          ],
+          inicioMin: [0, 30], // 15:30 começa em 30min
+          periodoInicio2Min: 30, // segundo período começa em :30
+        },
+        {
+          // 01/07/2026 — Terça-feira
+          ano: 2026, mes: 6, dia: 1,
+          nome: "Terça-feira, 01/07/2026",
+          periodos: [
+            { inicio: 8, fim: 12 },
+            { inicio: 14, fim: 21 },
+          ],
+          periodoInicio2Min: 0,
+        },
       ];
 
-      for (const dia of [proximaSegunda, proximaTerca]) {
-        const nomeDia = dia.getDay() === 1 ? "Segunda-feira" : "Terça-feira";
-        const dataStr = dia.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-        for (const periodo of periodos) {
-          for (let h = periodo.inicio; h < periodo.fim; h++) {
-            for (const min of [0, 30]) {
-              if (h === periodo.fim - 1 && min === 30) continue; // não ultrapassar o fim
-              const slotDate = new Date(dia);
-              slotDate.setHours(h, min, 0, 0);
-              const dataHoraKey = slotDate.toISOString();
-              const horaStr = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
-              slots.push({
-                dataHora: dataHoraKey,
-                diaSemana: `${nomeDia}, ${dataStr}`,
-                hora: horaStr,
-                disponivel: !horariosOcupados.has(dataHoraKey),
-              });
-            }
-          }
+      const slots: { dataHora: string; diaSemana: string; hora: string; disponivel: boolean }[] = [];
+
+      // 30/06: 08:00–11:30 e 15:30–20:30
+      const dia30 = new Date(2026, 5, 30); // mês 0-indexed: 5 = junho
+      for (let h = 8; h <= 11; h++) {
+        for (const min of [0, 30]) {
+          if (h === 11 && min === 30) continue;
+          const slotDate = new Date(dia30);
+          slotDate.setHours(h + 3, min, 0, 0); // +3 para converter BRT→UTC
+          const dataHoraKey = slotDate.toISOString();
+          const horaStr = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+          slots.push({ dataHora: dataHoraKey, diaSemana: "Segunda-feira, 30/06/2026", hora: horaStr, disponivel: !horariosOcupados.has(dataHoraKey) });
+        }
+      }
+      // 15:30 às 20:30
+      for (let h = 15; h <= 20; h++) {
+        const mins = h === 15 ? [30] : [0, 30];
+        for (const min of mins) {
+          if (h === 20 && min === 30) continue;
+          const slotDate = new Date(dia30);
+          slotDate.setHours(h + 3, min, 0, 0);
+          const dataHoraKey = slotDate.toISOString();
+          const horaStr = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+          slots.push({ dataHora: dataHoraKey, diaSemana: "Segunda-feira, 30/06/2026", hora: horaStr, disponivel: !horariosOcupados.has(dataHoraKey) });
+        }
+      }
+
+      // 01/07: 08:00–11:30 e 14:00–20:30
+      const dia01 = new Date(2026, 6, 1); // mês 0-indexed: 6 = julho
+      for (let h = 8; h <= 11; h++) {
+        for (const min of [0, 30]) {
+          if (h === 11 && min === 30) continue;
+          const slotDate = new Date(dia01);
+          slotDate.setHours(h + 3, min, 0, 0);
+          const dataHoraKey = slotDate.toISOString();
+          const horaStr = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+          slots.push({ dataHora: dataHoraKey, diaSemana: "Terça-feira, 01/07/2026", hora: horaStr, disponivel: !horariosOcupados.has(dataHoraKey) });
+        }
+      }
+      // 14:00 às 20:30
+      for (let h = 14; h <= 20; h++) {
+        for (const min of [0, 30]) {
+          if (h === 20 && min === 30) continue;
+          const slotDate = new Date(dia01);
+          slotDate.setHours(h + 3, min, 0, 0);
+          const dataHoraKey = slotDate.toISOString();
+          const horaStr = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+          slots.push({ dataHora: dataHoraKey, diaSemana: "Terça-feira, 01/07/2026", hora: horaStr, disponivel: !horariosOcupados.has(dataHoraKey) });
         }
       }
 
