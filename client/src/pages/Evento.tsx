@@ -556,7 +556,7 @@ export default function Evento() {
       {/* ── RODAPÉ ── */}
       <footer style={{ borderTop: "1px solid #1a1a1a", padding: "24px", textAlign: "center" }}>
         <p style={{ color: "#444", fontSize: "12px", margin: 0 }}>
-          LED GROWTH MODELS · Evento presencial em Brasília · {EVENTO.dia}/{EVENTO.mesExtenso}/2026
+          
         </p>
       </footer>
 
