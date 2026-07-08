@@ -58,11 +58,7 @@ export default function Evento() {
   const [modalAberto, setModalAberto] = useState(false);
 
   const handleCadastro = () => {
-    if (EVENTO.linkCadastro && EVENTO.linkCadastro !== "#cadastro") {
-      window.open(EVENTO.linkCadastro, "_blank");
-    } else {
-      setModalAberto(true);
-    }
+    setModalAberto(true);
   };
 
   return (
