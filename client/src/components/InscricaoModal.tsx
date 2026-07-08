@@ -23,8 +23,16 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sucesso, setSucesso] = useState(false);
 
+  const GRUPO_WHATSAPP = "https://chat.whatsapp.com/IsS6G36GB0r3hN6TLawFSQ?mode=gi_t";
+
   const inscrever = trpc.leads.inscrever.useMutation({
-    onSuccess: () => setSucesso(true),
+    onSuccess: () => {
+      setSucesso(true);
+      // Redireciona automaticamente após 1.5s
+      setTimeout(() => {
+        window.open(GRUPO_WHATSAPP, "_blank");
+      }, 1500);
+    },
     onError: (err) => {
       setErrors({ geral: err.message || "Erro ao realizar inscrição. Tente novamente." });
     },
@@ -106,25 +114,25 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
               color: "#fff", fontSize: "24px", fontWeight: 800,
               margin: "0 0 16px", lineHeight: 1.2,
             }}>
-              Pré-inscrição concluída!
+              Inscrição confirmada!
             </h2>
-            <p style={{ color: "#dddddd", fontSize: "15px", lineHeight: 1.7, margin: "0 0 12px" }}>
-              Nossa equipe entrará em contato pelo WhatsApp para confirmar sua vaga.
+            <p style={{ color: "#dddddd", fontSize: "15px", lineHeight: 1.7, margin: "0 0 24px" }}>
+              Você está sendo direcionado para o grupo exclusivo de participantes no WhatsApp...
             </p>
-            <p style={{ color: "#dddddd", fontSize: "15px", lineHeight: 1.7, margin: "0 0 32px" }}>
-              Ao confirmar, você recebe acesso a um presente exclusivo preparado para os participantes do evento.
-            </p>
-            <button
-              onClick={handleClose}
+            <a
+              href={GRUPO_WHATSAPP}
+              target="_blank"
+              rel="noopener noreferrer"
               style={{
+                display: "inline-flex", alignItems: "center", gap: "8px",
                 background: "#39ff14", color: "#0a0a0a", border: "none",
                 borderRadius: "4px", padding: "14px 36px",
                 fontSize: "15px", fontWeight: 800, cursor: "pointer",
-                letterSpacing: "0.5px",
+                letterSpacing: "0.5px", textDecoration: "none",
               }}
             >
-              Fechar
-            </button>
+              Entrar no grupo agora
+            </a>
           </div>
         ) : (
           /* ── FORMULÁRIO ── */
