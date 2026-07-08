@@ -179,13 +179,11 @@ export default function Evento() {
 
           <h1 className="hero-title" style={{
             fontSize: "clamp(64px, 10vw, 116px)", fontWeight: 900,
-            lineHeight: 0.88, margin: "0 0 32px", letterSpacing: "-3px",
+            lineHeight: 0.9, margin: "0 0 32px", letterSpacing: "-3px",
+            color: "#ffffff",
           }}>
-            <span style={{ color: "#ffffff" }}>LED</span><br />
-            <span style={{ color: "#39ff14" }}>GROWTH</span><br />
-            <span style={{ color: "#ffffff", fontSize: "clamp(38px, 6vw, 68px)", fontWeight: 700, letterSpacing: "-1px" }}>
-              MODELS
-            </span>
+            <span>LED GROWTH</span><br />
+            <span>MODELS</span>
           </h1>
 
           <p className="hero-sub" style={{
