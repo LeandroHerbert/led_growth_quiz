@@ -6,12 +6,12 @@ import { InscricaoModal } from "@/components/InscricaoModal";
 // CONFIGURAÇÃO DO EVENTO — altere apenas esta seção a cada semana
 // ============================================================
 const EVENTO = {
-  dia: "25",
-  mesExtenso: "JUNHO",
+  dia: "16",
+  mesExtenso: "JULHO",
   diaSemana: "QUINTA-FEIRA",
-  horario: "14h",
-  local: "Espaço RC",
-  endereco: "Bonaparte Hotel — Setor Hoteleiro Sul, Brasília",
+  horario: "20H",
+  local: "ONLINE",
+  endereco: "Envio do link do ZOOM exclusivo para quem estiver no grupo de participantes",
   vagas: 30,
   linkCadastro: "https://profplay.com.br/evento/led-growth-models-53-57-95",
 };
@@ -173,7 +173,7 @@ export default function Evento() {
             padding: "6px 16px", marginBottom: "36px",
           }}>
             <span style={{ color: "#39ff14", fontSize: "11px", fontWeight: 700, letterSpacing: "2px" }}>
-              EVENTO PRESENCIAL · BRASÍLIA · GRATUITO
+              ONLINE | GRATUITO | DIA 16/07 ÀS 20H
             </span>
           </div>
 
@@ -200,7 +200,7 @@ export default function Evento() {
             fontSize: "clamp(14px, 1.8vw, 18px)", color: "#dddddd",
             lineHeight: 1.75, margin: "0 auto 48px", maxWidth: "520px",
           }}>
-            Cada negócio tem um motor de crescimento. Quando você descobre o seu,
+            Cada negócio tem o seu motor de crescimento ideal. Quando você descobre o seu,
             tudo — pessoas, gestão, marketing e vendas — passa a apontar para o mesmo lugar.
           </p>
 
@@ -217,7 +217,7 @@ export default function Evento() {
               <ArrowRight size={18} />
             </button>
             <p style={{ color: "#cccccc", fontSize: "13px", marginTop: "14px" }}>
-              {EVENTO.vagas} vagas gratuitas · {EVENTO.dia} de {EVENTO.mesExtenso} · {EVENTO.local}
+              ONLINE | GRATUITO | SEM GRAVAÇÃO
             </p>
           </div>
         </div>
@@ -266,11 +266,11 @@ export default function Evento() {
       <section style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px 72px" }}>
         <RevealSection>
           <p style={{ color: "#39ff14", fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", margin: "0 0 16px", fontWeight: 700 }}>
-            O problema que ninguém fala
+            
           </p>
           <h2 style={{ fontSize: "clamp(26px, 3.5vw, 42px)", fontWeight: 900, margin: "0 0 48px", color: "#fff", lineHeight: 1.15, maxWidth: "780px" }}>
-            Energia na direção errada não é só desperdício.{" "}
-            <span style={{ color: "#39ff14" }}>É prejuízo.</span>
+            Energia na direção errada{" "}
+            <span style={{ color: "#39ff14" }}>é prejuízo.</span>
           </h2>
         </RevealSection>
 
@@ -278,7 +278,7 @@ export default function Evento() {
           {[
             {
               titulo: "Cada negócio tem um modelo de crescimento que cabe melhor nele",
-              desc: "Não existe uma estratégia universal. O que funciona para um negócio pode ser exatamente o que trava outro — e a maioria dos empresários nunca parou para entender qual é o seu.",
+              desc: "Não existe uma estratégia universal. O que funciona para um negócio pode ser exatamente o que trava outro (e a maioria dos empresários nunca parou para entender qual é o seu).",
               delay: 0,
             },
             {
@@ -330,7 +330,7 @@ export default function Evento() {
               Algumas perguntas para você já ir pensando
             </h2>
             <p style={{ color: "#aaaaaa", fontSize: "15px", margin: "0 0 48px", maxWidth: "560px", lineHeight: 1.65 }}>
-              Não existe resposta certa ou errada. Mas as suas respostas dizem muito sobre como o seu negócio realmente funciona.
+              Não existe resposta certa ou errada. Mas as suas respostas dizem muito sobre como o seu negócio funciona hoje em dia.
             </p>
           </RevealSection>
 
@@ -388,7 +388,7 @@ export default function Evento() {
             },
             {
               titulo: "Você trabalha muito e o crescimento não acompanha",
-              desc: "A sensação de que falta uma alavanca — não mais esforço.",
+              desc: "A sensação de que falta uma alavanca e não mais esforço.",
               delay: 120,
             },
             {
@@ -418,7 +418,7 @@ export default function Evento() {
               Um encontro de prática, que vira ponteiro no seu negócio.
             </h2>
             <p style={{ color: "#dddddd", fontSize: "15px", margin: "0 0 40px" }}>
-              Um grupo de 30 empresários. Ambiente fechado. Conteúdo que você não encontra em curso.
+              
             </p>
           </RevealSection>
 
@@ -427,7 +427,7 @@ export default function Evento() {
               {
                 num: "01",
                 titulo: "Diagnóstico ao vivo",
-                desc: "Você identifica qual é o motor que realmente move o seu negócio — não o que você acha, o que os dados mostram.",
+                desc: "Você identifica qual é o motor que realmente move o seu negócio.",
                 delay: 0,
               },
               {
@@ -438,8 +438,8 @@ export default function Evento() {
               },
               {
                 num: "03",
-                titulo: "Ambiente de 30 pessoas",
-                desc: "Sem palco, sem plateia. Um grupo pequeno de empresários que estão no mesmo jogo — e que têm as mesmas perguntas que você.",
+                titulo: "Ambiente controlado",
+                desc: "Um grupo pequeno de empresários que estão no mesmo jogo e que têm as mesmas perguntas que você. Foco absoluto em encontrar a alavanca correta.",
                 delay: 200,
               },
               {
@@ -493,11 +493,11 @@ export default function Evento() {
               <p style={{ color: "#39ff14", fontSize: "12px", fontWeight: 700, margin: "0 0 20px", letterSpacing: "2px" }}>
                 ESTRATEGISTA
               </p>
-              <p style={{ color: "#ffffff", fontSize: "16px", lineHeight: 1.75, margin: "0 0 14px", maxWidth: "540px" }}>
-                Empresário, escritor e conselheiro de empresas. Trabalha com estratégia de crescimento para negócios que querem escalar com clareza — não com sorte.
+              <p style={{ color: "#ffffff", fontSize: "15px", lineHeight: 1.75, margin: "0 0 14px", maxWidth: "540px" }}>
+                Casado, pai de gêmeos e self-made, Leandro Herbert é o criador da Atmosfera Estratégica de Valor. O mecanismo utilizado por experts e empresários para construírem estratégias, movimentos e ecossistemas de alto impacto.
               </p>
-              <p style={{ color: "#dddddd", fontSize: "15px", lineHeight: 1.7, margin: 0, maxWidth: "540px" }}>
-                Já atuou em diferentes setores e modelos de negócio. Usa essa experiência para ajudar fundadores a parar de crescer no escuro e começar a crescer com método.
+              <p style={{ color: "#dddddd", fontSize: "14px", lineHeight: 1.7, margin: 0, maxWidth: "540px" }}>
+                Estrategista, Empresário, Mentor, Copywriter, Advogado e apaixonado pelo comportamento humano, Leandro Herbert tem como sua principal motivação “ajudar as pessoas a se transformarem em um ativo mais valioso.”
               </p>
             </div>
           </div>
