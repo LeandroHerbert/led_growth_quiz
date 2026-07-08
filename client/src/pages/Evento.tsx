@@ -518,7 +518,7 @@ export default function Evento() {
             }}>
               <Users size={14} color="#39ff14" />
               <span style={{ color: "#39ff14", fontSize: "12px", fontWeight: 700, letterSpacing: "1px" }}>
-                APENAS {EVENTO.vagas} VAGAS · ENTRADA GRATUITA
+                ONLINE | GRATUITO | 16/07 ÀS 20H | ZOOM
               </span>
             </div>
 
@@ -547,7 +547,7 @@ export default function Evento() {
             </button>
 
             <p style={{ color: "#bbbbbb", fontSize: "13px", marginTop: "16px" }}>
-              Vagas limitadas · Sem custo · Brasília
+              
             </p>
           </div>
         </RevealSection>
