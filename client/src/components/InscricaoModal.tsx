@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, ArrowRight, CheckCircle2 } from "lucide-react";
+import { X, ArrowRight, CheckCircle2, ShieldCheck } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 interface InscricaoModalProps {
@@ -9,7 +9,6 @@ interface InscricaoModalProps {
 }
 
 function formatWhatsApp(value: string): string {
-  // Remove tudo que não for dígito
   const digits = value.replace(/\D/g, "").slice(0, 11);
   if (digits.length <= 2) return digits;
   if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
@@ -20,6 +19,7 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
   const [email, setEmail] = useState("");
+  const [aceite, setAceite] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sucesso, setSucesso] = useState(false);
 
@@ -28,7 +28,6 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
   const inscrever = trpc.leads.inscrever.useMutation({
     onSuccess: () => {
       setSucesso(true);
-      // Redireciona automaticamente após 1.5s
       setTimeout(() => {
         window.open(GRUPO_WHATSAPP, "_blank");
       }, 1500);
@@ -45,6 +44,7 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
     if (digits.length < 10) errs.whatsapp = "Informe um WhatsApp válido com DDD";
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       errs.email = "Informe um e-mail válido";
+    if (!aceite) errs.aceite = "É necessário aceitar para continuar";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -56,13 +56,13 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
       nome: nome.trim(),
       whatsapp: whatsapp.replace(/\D/g, ""),
       email: email.trim().toLowerCase(),
-      eventoData: eventoData ?? "18/06/2026",
+      eventoData: eventoData ?? "16/07/2026",
     });
   };
 
   const handleClose = () => {
     if (!inscrever.isPending) {
-      setNome(""); setWhatsapp(""); setEmail("");
+      setNome(""); setWhatsapp(""); setEmail(""); setAceite(false);
       setErrors({}); setSucesso(false);
       onClose();
     }
@@ -116,8 +116,11 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
             }}>
               Inscrição confirmada!
             </h2>
-            <p style={{ color: "#dddddd", fontSize: "15px", lineHeight: 1.7, margin: "0 0 24px" }}>
-              Você está sendo direcionado para o grupo exclusivo de participantes no WhatsApp...
+            <p style={{ color: "#dddddd", fontSize: "15px", lineHeight: 1.7, margin: "0 0 12px" }}>
+              Você está sendo direcionado para o grupo exclusivo de participantes no WhatsApp.
+            </p>
+            <p style={{ color: "#aaaaaa", fontSize: "14px", lineHeight: 1.7, margin: "0 0 28px" }}>
+              Entre no grupo e aguarde por lá. Não se preocupe: o grupo é fechado e somente nossa equipe pode enviar mensagens dentro dele.
             </p>
             <a
               href={GRUPO_WHATSAPP}
@@ -150,9 +153,6 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
               }}>
                 Inscrição gratuita
               </h2>
-              <p style={{ color: "#aaaaaa", fontSize: "13px", margin: 0 }}>
-                Apenas {/* vagas */} 30 vagas disponíveis. Preencha para reservar a sua.
-              </p>
             </div>
 
             <form onSubmit={handleSubmit} noValidate>
@@ -197,7 +197,7 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
               </div>
 
               {/* E-mail */}
-              <div style={{ marginBottom: "24px" }}>
+              <div style={{ marginBottom: "20px" }}>
                 <label style={{ color: "#cccccc", fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "6px", letterSpacing: "0.5px" }}>
                   E-MAIL
                 </label>
@@ -214,6 +214,40 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
                   }}
                 />
                 {errors.email && <p style={{ color: "#ff6666", fontSize: "12px", margin: "4px 0 0" }}>{errors.email}</p>}
+              </div>
+
+              {/* Checkbox LGPD */}
+              <div style={{ marginBottom: "20px" }}>
+                <label style={{
+                  display: "flex", alignItems: "flex-start", gap: "10px",
+                  cursor: "pointer",
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={aceite}
+                    onChange={(e) => { setAceite(e.target.checked); setErrors(p => ({ ...p, aceite: "" })); }}
+                    style={{
+                      marginTop: "2px", width: "16px", height: "16px",
+                      accentColor: "#39ff14", cursor: "pointer", flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ color: "#aaaaaa", fontSize: "12px", lineHeight: 1.6 }}>
+                    Concordo em receber informações, conteúdos e comunicações relacionadas ao evento e à Altum. Seus dados estão protegidos e não serão compartilhados com terceiros.
+                  </span>
+                </label>
+                {errors.aceite && <p style={{ color: "#ff6666", fontSize: "12px", margin: "6px 0 0" }}>{errors.aceite}</p>}
+              </div>
+
+              {/* Proteção de dados */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                background: "rgba(57,255,20,0.05)", border: "1px solid rgba(57,255,20,0.15)",
+                borderRadius: "4px", padding: "10px 14px", marginBottom: "20px",
+              }}>
+                <ShieldCheck size={14} color="#39ff14" style={{ flexShrink: 0 }} />
+                <span style={{ color: "#888", fontSize: "11px", lineHeight: 1.5 }}>
+                  Seus dados estão seguros e protegidos conforme a LGPD.
+                </span>
               </div>
 
               {errors.geral && (
@@ -238,10 +272,6 @@ export function InscricaoModal({ isOpen, onClose, eventoData }: InscricaoModalPr
                   <>Confirmar inscrição <ArrowRight size={16} /></>
                 )}
               </button>
-
-              <p style={{ color: "#555", fontSize: "11px", textAlign: "center", margin: "12px 0 0" }}>
-                Seus dados são usados apenas para confirmar sua vaga.
-              </p>
             </form>
           </>
         )}
