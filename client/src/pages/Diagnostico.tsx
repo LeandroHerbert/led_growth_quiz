@@ -160,9 +160,6 @@ export default function Diagnostico() {
       <section style={{ position: "relative", zIndex: 1 }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "80px 24px" }}>
           <div className="diag-reveal">
-            <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "3px", color: "#39ff14", textTransform: "uppercase", marginBottom: "16px" }}>
-              O problema que ninguém fala
-            </p>
             <h2 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, lineHeight: 1.1, maxWidth: "780px", marginBottom: "48px" }}>
               Energia na direção errada não é só desperdício. É prejuízo.
             </h2>
@@ -189,9 +186,6 @@ export default function Diagnostico() {
       <section style={{ background: "#0d2010", position: "relative", zIndex: 1 }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "80px 24px" }}>
           <div className="diag-reveal">
-            <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "3px", color: "#39ff14", textTransform: "uppercase", marginBottom: "16px" }}>
-              Antes de responder ao diagnóstico
-            </p>
             <h2 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, lineHeight: 1.1, maxWidth: "780px", marginBottom: "16px" }}>
               Algumas perguntas para você já ir pensando
             </h2>
@@ -225,9 +219,6 @@ export default function Diagnostico() {
       <section style={{ position: "relative", zIndex: 1 }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "80px 24px" }}>
           <div className="diag-reveal">
-            <p style={{ fontSize: "11px", fontWeight: 700, letterSpacing: "3px", color: "#39ff14", textTransform: "uppercase", marginBottom: "16px" }}>
-              Como funciona
-            </p>
             <h2 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, lineHeight: 1.1, maxWidth: "780px", marginBottom: "48px" }}>
               Dois passos para clareza total
             </h2>
