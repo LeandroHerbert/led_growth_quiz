@@ -12,6 +12,7 @@ import Evento from "./pages/Evento";
 import CrmLeads from "./pages/CrmLeads";
 import Agendar from "./pages/Agendar";
 import VSL from "./pages/VSL";
+import Diagnostico from "./pages/Diagnostico";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -25,6 +26,7 @@ function Router() {
       <Route path={"/crm"} component={CrmLeads} />
       <Route path={"/agendar"} component={Agendar} />
       <Route path={"/vsl"} component={VSL} />
+      <Route path={"/diagnostico"} component={Diagnostico} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
